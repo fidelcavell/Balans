@@ -1,0 +1,176 @@
+//
+//  TransactionView.swift
+//  ExpensesTracker
+//
+//  Created by Fidel Fausta Cavell on 30/06/26.
+//
+
+import SwiftUI
+import SwiftData
+
+struct TransactionView: View {
+    @Environment(Router.self) private var router
+    @State private var viewModel: TransactionViewModel = TransactionViewModel()
+    
+    @State private var selectedType: TransactionType = .outflow
+    @State private var selectedDate = Date()
+    @State private var isDatePickerPresented = false
+    
+    var filteredTransactions: [Transaction] {
+        viewModel.transactions
+            .filter { transaction in
+                
+                let targetType: TransactionType = (selectedType == .outflow) ? .outflow : .inflow
+                guard transaction.type == targetType else { return false }
+                
+                let calendar = Calendar.current
+                let transactionComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
+                let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
+                
+                guard transactionComponents.month == filterComponents.month,
+                      transactionComponents.year == filterComponents.year else { return false }
+                
+                return true
+            }
+    }
+    
+    var currentMonthSpending: Double {
+        viewModel.transactions
+            .filter { transaction in
+                let calendar = Calendar.current
+                let transactionComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
+                let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
+                return transactionComponents.month == filterComponents.month &&
+                transactionComponents.year == filterComponents.year &&
+                transaction.type == .outflow
+            }
+            .reduce(into: 0) { $0 + $1.amount }
+    }
+    
+    var body: some View {
+        @Bindable var router = router
+        
+        NavigationStack(path: $router.path) {
+            VStack(spacing: 0) {
+                
+                MonthlySpendingCardView(totalSpending: currentMonthSpending, spendingLimit: 100000000)
+                    .padding(.top, 12)
+                
+                HStack {
+                    Text("Transaction List")
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
+                .padding(.bottom, 8)
+                
+                if filteredTransactions.isEmpty {
+                    VStack(spacing: 12) {
+                        Spacer()
+                        LottieAnimationView(fileName: "empty_box")
+                            .frame(width: 250, height: 250)
+                        Text("No Transactions")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                        Text("No transactions found for this selection.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                } else {
+                    ScrollView {
+                        VStack(spacing: 10) {
+                            ForEach(filteredTransactions) { transaction in
+                                TransactionCardView(transaction: transaction)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 4)
+                        .padding(.bottom, 32)
+                    }
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        router.navigate(to: .newTransaction)
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+                
+                ToolbarSpacer()
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isDatePickerPresented.toggle()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(selectedDate.formatted(.dateTime.month(.abbreviated).year()))
+                            
+                            Image(systemName: "chevron.down")
+                                .font(.caption2)
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    }
+                    .popover(isPresented: $isDatePickerPresented) {
+                        VStack(spacing: 0) {
+                            HStack {
+                                Spacer()
+                                Button("Done") {
+                                    isDatePickerPresented = false
+                                }
+                                .fontWeight(.semibold)
+                                .font(.subheadline)
+                            }
+                            .padding([.top, .horizontal], 16)
+                            
+                            CustomMonthYearPickerView(selectedDate: $selectedDate)
+                                .padding(.bottom, 8)
+                        }
+                        .presentationCompactAdaptation(.popover)
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Picker("Transaction Type", selection: $selectedType) {
+                            ForEach(TransactionType.allCases) { type in
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(selectedType.rawValue)
+                            Image(systemName: "chevron.down")
+                                .font(.caption2)
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    }
+                }
+            }
+            .navigationDestination(for: AppRoute.self) { route in
+                switch route {
+                case .newTransaction:
+                    NewTransactionView()
+                }
+            }
+        }
+        .onAppear {
+            viewModel.fetchTransactions()
+        }
+    }
+}
+
+#Preview {    
+    NavigationStack {
+        TransactionView()
+            .environment(Router())
+    }
+}
