@@ -96,6 +96,7 @@ struct NewTransactionView: View {
         .formStyle(.grouped)
         .navigationTitle("New Transaction")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -109,12 +110,22 @@ struct NewTransactionView: View {
                         label: label
                     )
                     
-                    //dismiss()
                 } label: {
                     Text("Save")
                 }
                 .disabled(amount.isEmpty || selectedLabel == nil)
             }
+        }
+        .alert(item: $viewModel.message) { message in
+            Alert(
+                title: Text(message.isSuccess ? "Success" : "Error"),
+                message: Text(message.text),
+                dismissButton: .default(Text("Got it!")) {
+                    if message.isSuccess {
+                        dismiss()
+                    }
+                }
+            )
         }
         .sheet(isPresented: $isShowingCreateLabelSheet) {
             NewCategoryView()

@@ -16,8 +16,10 @@ struct TransactionView: View {
     @State private var selectedDate = Date()
     @State private var isDatePickerPresented = false
     
+    @Query(sort: \Transaction.occurredAt, order: .reverse) private var transactions: [Transaction]
+    
     var filteredTransactions: [Transaction] {
-        viewModel.transactions
+        transactions
             .filter { transaction in
                 
                 let targetType: TransactionType = (selectedType == .outflow) ? .outflow : .inflow
@@ -35,7 +37,7 @@ struct TransactionView: View {
     }
     
     var currentMonthSpending: Double {
-        viewModel.transactions
+        transactions
             .filter { transaction in
                 let calendar = Calendar.current
                 let transactionComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
@@ -86,6 +88,12 @@ struct TransactionView: View {
                         VStack(spacing: 10) {
                             ForEach(filteredTransactions) { transaction in
                                 TransactionCardView(transaction: transaction)
+                                    .scrollTransition(.animated, axis: .vertical) { content, phase in
+                                        content
+                                            .opacity(phase.isIdentity ? 1.0 : 0.6)
+                                            .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
+                                            .offset(y: phase.isIdentity ? 0 : (phase == .topLeading ? -8 : 8))
+                                    }
                             }
                         }
                         .padding(.horizontal, 16)
@@ -141,12 +149,12 @@ struct TransactionView: View {
                     Menu {
                         Picker("Transaction Type", selection: $selectedType) {
                             ForEach(TransactionType.allCases) { type in
-                                Text(type.rawValue).tag(type)
+                                Text(type.label).tag(type)
                             }
                         }
                     } label: {
                         HStack(spacing: 6) {
-                            Text(selectedType.rawValue)
+                            Text(selectedType.label)
                             Image(systemName: "chevron.down")
                                 .font(.caption2)
                         }
@@ -162,13 +170,10 @@ struct TransactionView: View {
                 }
             }
         }
-        .onAppear {
-            viewModel.fetchTransactions()
-        }
     }
 }
 
-#Preview {    
+#Preview {
     NavigationStack {
         TransactionView()
             .environment(Router())

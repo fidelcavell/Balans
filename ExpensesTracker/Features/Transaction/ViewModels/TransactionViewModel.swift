@@ -16,60 +16,9 @@ final class TransactionViewModel {
     private let context = DataProvider.shared.context
     
     // MARK: Published State
-    var transactions: [Transaction] = []
-    var labels: [TransactionLabel] = []
+    var message: StateMessage? = nil
     
     // MARK: - Function
-    /// Fetch all records sorted by date (newest first).
-    func fetchTransactions() {
-        let descriptor = FetchDescriptor<Transaction>(
-            sortBy: [SortDescriptor(\.occurredAt, order: .reverse)]
-        )
-        do {
-            transactions = try context.fetch(descriptor)
-        } catch {
-            print("[Transaction VM] Fetch records failed: \(error.localizedDescription)")
-        }
-    }
-    
-    /// Fetch transactions filtered by type.
-    func fetchTransactions(type: TransactionType) {
-        let descriptor = FetchDescriptor<Transaction>(
-            predicate: #Predicate { $0.type == type },
-            sortBy: [SortDescriptor(\.occurredAt, order: .reverse)]
-        )
-        do {
-            transactions = try context.fetch(descriptor)
-        } catch {
-            print("[Transaction VM] Fetch by type failed: \(error.localizedDescription)")
-        }
-    }
-    
-    /// Fetch transactions within a date range.
-    func fetchTransactions(from startDate: Date, to endDate: Date) {
-        let descriptor = FetchDescriptor<Transaction>(
-            predicate: #Predicate { $0.occurredAt >= startDate && $0.occurredAt <= endDate },
-            sortBy: [SortDescriptor(\.occurredAt, order: .reverse)]
-        )
-        do {
-            transactions = try context.fetch(descriptor)
-        } catch {
-            print("[Transaction VM] Fetch by date range failed: \(error.localizedDescription)")
-        }
-    }
-    
-    /// Fetch all available labels.
-    func fetchLabels() {
-        let descriptor = FetchDescriptor<TransactionLabel>(
-            sortBy: [SortDescriptor(\.title)]
-        )
-        do {
-            labels = try context.fetch(descriptor)
-        } catch {
-            print("[Transaction VM] Fetch labels failed: \(error.localizedDescription)")
-        }
-    }
-    
     /// Insert a brand-new transaction record.
     func saveTransaction(
         occurredAt: Date,
@@ -90,7 +39,8 @@ final class TransactionViewModel {
         /// To attach the relationship
         newTransaction.label = label
         
-        saveAndRefresh()
+        save()
+        self.message = .success("New Transaction has been added!")
     }
     
     /// Update an existing transaction record identified by its UUID.
@@ -118,13 +68,15 @@ final class TransactionViewModel {
         existing.note = note
         existing.label = label
         
-        saveAndRefresh()
+        save()
+        self.message = .success("The Transaction has been updated!")
     }
     
     /// Delete a single transaction record.
     func deleteRecord(_ selectedTransaction: Transaction) {
         context.delete(selectedTransaction)
-        saveAndRefresh()
+        save()
+        self.message = .success("The Transaction has been deleted!")
     }
     
     /// Delete a transaction record by its UUID.
@@ -136,17 +88,18 @@ final class TransactionViewModel {
         
         if let selectedTransaction = try? context.fetch(descriptor).first {
             context.delete(selectedTransaction)
-            saveAndRefresh()
+            save()
+            self.message = .success("The Transaction has been deleted!")
         }
     }
     
     // MARK: - Internal Helpers
-    private func saveAndRefresh() {
+    private func save() {
         do {
             try context.save()
         } catch {
+            self.message = .failure("Failed to perform your request. Please try again. Error: \(error.localizedDescription)")
             print("[Transaction VM] Save error: \(error.localizedDescription)")
         }
-        fetchTransactions()
     }
 }

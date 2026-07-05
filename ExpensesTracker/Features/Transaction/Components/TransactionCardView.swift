@@ -40,7 +40,7 @@ struct TransactionCardView: View {
     
     var body: some View {
         Button {
-            //
+            // TODO - Navigate to specific transaction's data
         } label: {
             HStack(spacing: 16) {
                 Image(systemName: categoryIcon)
@@ -63,7 +63,7 @@ struct TransactionCardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
                 HStack(spacing: 8) {
-                    Text(isIncome ? "\(formatCompactCurrency(amount))" : "-\(formatCompactCurrency(amount))")
+                    Text(formatCompactCurrency(amount))
                         .font(.system(.body, design: .monospaced))
                         .fontWeight(.semibold)
                         .foregroundColor(isIncome ? .green : .red)
@@ -112,9 +112,11 @@ struct TransactionCardView: View {
         // Otherwise, format normally
         if index > 0 {
             let formattedNum = num.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", num) : String(format: "%.1f", num)
-            return "$\(formattedNum)\(suffix[index])"
+            let indonesianDecimal = formattedNum.replacingOccurrences(of: ".", with: ",")
+            
+            return "Rp \(indonesianDecimal)\(suffix[index])"
         } else {
-            return String(format: "$%.2f", value)
+            return String(format: "Rp %.0f", value)
         }
     }
 }
