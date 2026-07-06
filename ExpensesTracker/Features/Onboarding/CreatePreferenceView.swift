@@ -88,7 +88,8 @@ struct CreatePreferenceView: View {
                         .padding(8)
                     } header: {
                         Text("Monthly Spending Limit")
-                    }            }
+                    }
+                }
                 .padding(.horizontal, 8)
                 
                 Spacer()

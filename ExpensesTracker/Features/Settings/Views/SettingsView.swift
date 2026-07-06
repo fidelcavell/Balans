@@ -9,13 +9,10 @@ import SwiftUI
 import SwiftData
 
 struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var viewModel: SettingsViewModel = SettingsViewModel()
     
-    @State private var name: String = ""
-    @State private var currentSpending: Double = 0
-    @State private var monthlySpendingLimit: Double = 0
-    
-    @State private var isEditing = false
+    @State private var isEditing: Bool = false
     
     @Query private var preferences: [Preference]
     var preference: Preference {
@@ -57,11 +54,12 @@ struct SettingsView: View {
                 }
             }
             .sheet(isPresented: $isEditing) {
-                VStack {
-                    Text("Editting Your Personal Preferences")
-                }
-                .presentationDetents([.fraction(0.65)])
-                .presentationDragIndicator(.visible)
+                EditPreferenceView(
+                    viewModel: $viewModel,
+                    isEditing: $isEditing,
+                    currentPreference: preference
+                )
+                .presentationDetents([.medium])
             }
         }
     }
