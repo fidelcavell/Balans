@@ -97,9 +97,9 @@ struct TransactionCardView: View {
         }
     }
     
-    // Helper function to compress large numbers (e.g., 100000 -> $100K)
+    // Helper function to compress large numbers (e.g., 100000 -> 100rb)
     private func formatCompactCurrency(_ value: Double) -> String {
-        let suffix = ["", "K", "M", "B", "T"]
+        let suffix = ["", "rb", "jt", "M", "T"]
         var index = 0
         var num = value
         
@@ -108,7 +108,7 @@ struct TransactionCardView: View {
             index += 1
         }
         
-        // If it was formatted (index > 0), show 1 decimal place if needed (e.g., 100.5K)
+        // If it was formatted (index > 0), show 1 decimal place if needed (e.g., 100.5rb)
         // Otherwise, format normally
         if index > 0 {
             let formattedNum = num.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", num) : String(format: "%.1f", num)

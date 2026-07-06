@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct MonthlySpendingCardView: View {
-    var totalSpending: Double = 100000000
-    var spendingLimit: Double = 120000000
+    var totalCurrentSpending: Double
+    var monthlySpendingLimit: Double
     
     private var spendingRatio: Double {
-        guard spendingLimit > 0 else { return 0 }
-        return min(totalSpending / spendingLimit, 1.0)
+        guard monthlySpendingLimit > 0 else { return 0 }
+        return min(totalCurrentSpending / monthlySpendingLimit, 1.0)
     }
     
     private var progressBarColor: Color {
@@ -35,7 +35,7 @@ struct MonthlySpendingCardView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
-                    Text(totalSpending, format: .currency(code: "IDR").locale(Locale(identifier: "id_ID")))
+                    Text(totalCurrentSpending, format: .currency(code: "IDR"))
                         .font(.system(.title, design: .rounded))
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -74,14 +74,14 @@ struct MonthlySpendingCardView: View {
                             )
                             .frame(width: geometry.size.width * CGFloat(spendingRatio), height: 10)
                             .shadow(color: progressBarColor.opacity(0.4), radius: 4, x: 0, y: 2)
-                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: totalSpending)
+                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: totalCurrentSpending)
                     }
                 }
                 .frame(height: 10)
             }
             
             HStack {
-                Text("Limit: \(spendingLimit, format: .currency(code: "IDR").locale(Locale(identifier: "id_ID")))")
+                Text("Limit: \(monthlySpendingLimit, format: .currency(code: "IDR"))")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
@@ -115,8 +115,8 @@ struct MonthlySpendingCardView: View {
                         lineWidth: 1.5
                     )
             }
-            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 8)
-            .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
+                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 8)
+                .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
         )
         .padding(.horizontal, 16)
     }
@@ -128,13 +128,13 @@ struct MonthlySpendingCardView: View {
         
         VStack(spacing: 24) {
             // Safe Mode Example
-            MonthlySpendingCardView(totalSpending: 45000000, spendingLimit: 100000000)
+            MonthlySpendingCardView(totalCurrentSpending: 45000000, monthlySpendingLimit: 100000000)
             
             // Warning Mode Example
-            MonthlySpendingCardView(totalSpending: 82000000, spendingLimit: 100000000)
+            MonthlySpendingCardView(totalCurrentSpending: 82000000, monthlySpendingLimit: 100000000)
             
             // Critical Over-budget Example
-            MonthlySpendingCardView(totalSpending: 105000000, spendingLimit: 100000000)
+            MonthlySpendingCardView(totalCurrentSpending: 105000000, monthlySpendingLimit: 100000000)
         }
     }
 }

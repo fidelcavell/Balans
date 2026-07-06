@@ -17,36 +17,35 @@ struct TransactionView: View {
     @State private var isDatePickerPresented = false
     
     @Query(sort: \Transaction.occurredAt, order: .reverse) private var transactions: [Transaction]
+    @Query private var preferences: [Preference]
+    var preference: Preference {
+        preferences.first!
+    }
     
     var filteredTransactions: [Transaction] {
-        transactions
-            .filter { transaction in
-                
-                let targetType: TransactionType = (selectedType == .outflow) ? .outflow : .inflow
-                guard transaction.type == targetType else { return false }
-                
-                let calendar = Calendar.current
-                let transactionComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
-                let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
-                
-                guard transactionComponents.month == filterComponents.month,
-                      transactionComponents.year == filterComponents.year else { return false }
-                
-                return true
-            }
+        let calendar = Calendar.current
+        let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
+        
+        return transactions.filter { transaction in
+            guard transaction.type == selectedType else { return false }
+            let tComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
+            
+            return tComponents.month == filterComponents.month && tComponents.year == filterComponents.year
+        }
     }
     
     var currentMonthSpending: Double {
-        transactions
+        let calendar = Calendar.current
+        let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
+        
+        return transactions.lazy
             .filter { transaction in
-                let calendar = Calendar.current
-                let transactionComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
-                let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
-                return transactionComponents.month == filterComponents.month &&
-                transactionComponents.year == filterComponents.year &&
-                transaction.type == .outflow
+                guard transaction.type == .outflow else { return false }
+                let tComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
+                
+                return tComponents.month == filterComponents.month && tComponents.year == filterComponents.year
             }
-            .reduce(into: 0) { $0 + $1.amount }
+            .reduce(0) { $0 + $1.amount }
     }
     
     var body: some View {
@@ -54,9 +53,11 @@ struct TransactionView: View {
         
         NavigationStack(path: $router.path) {
             VStack(spacing: 0) {
-                
-                MonthlySpendingCardView(totalSpending: currentMonthSpending, spendingLimit: 100000000)
-                    .padding(.top, 12)
+                MonthlySpendingCardView(
+                    totalCurrentSpending: currentMonthSpending,
+                    monthlySpendingLimit: Double(preference.monthlySpendingLimit)
+                )
+                .padding(.top, 12)
                 
                 HStack {
                     Text("Transaction List")
@@ -96,7 +97,7 @@ struct TransactionView: View {
                                     }
                             }
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 8)
                         .padding(.top, 4)
                         .padding(.bottom, 32)
                     }
