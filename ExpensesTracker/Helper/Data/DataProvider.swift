@@ -19,6 +19,7 @@ class DataProvider {
         do {
             /// Put all used data model in the schema array
             let schema = Schema([
+                Preference.self,
                 Transaction.self,
                 TransactionLabel.self
             ])

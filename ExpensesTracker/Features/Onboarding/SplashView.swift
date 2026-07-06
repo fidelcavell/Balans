@@ -23,7 +23,7 @@ struct SplashView: View {
                     AppTabView()
                         .background(Color(.systemGroupedBackground).ignoresSafeArea())
                 } else {
-                    OnboardingView()
+                    CreatePreferenceView()
                 }
             } else {
                 Image("img_icon")
