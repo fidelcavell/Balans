@@ -8,6 +8,7 @@
 import Foundation
 import Observation
 import SwiftData
+import SwiftUI
 
 @Observable
 @MainActor
@@ -44,7 +45,7 @@ final class TransactionViewModel {
     }
     
     /// Update an existing transaction record identified by its UUID.
-    func updateRecord(
+    func updateTransaction(
         id: UUID,
         occurredAt: Date,
         amount: Double,
@@ -58,7 +59,7 @@ final class TransactionViewModel {
         )
         
         guard let existing = try? context.fetch(descriptor).first else {
-            print("[SpendingRecordVM] Record not found for update: \(id)")
+            print("[Transaction VM] Record not found for update: \(id)")
             return
         }
         
@@ -91,6 +92,30 @@ final class TransactionViewModel {
             save()
             self.message = .success("The Transaction has been deleted!")
         }
+    }
+    
+    /// Insert a brand-new transaction label record
+    func saveTransactionLabel(title: String, symbol: String, hexColor: String) {
+        let descriptor = FetchDescriptor<TransactionLabel>(
+            predicate: #Predicate { $0.title == title }
+        )
+        
+        if (try? context.fetch(descriptor).first) != nil {
+            self.message = .failure("Transaction Label '\(title)' is already exist!")
+            print("[Transaction VM] Record found for saving action with label's name: \(title)")
+            return
+        }
+        
+        let newLabel = TransactionLabel(
+            title: title,
+            symbol: symbol,
+            tint: Color(hex: hexColor)
+        )
+        
+        context.insert(newLabel)
+        
+        save()
+        self.message = .success("New Transaction Label has been created!")
     }
     
     // MARK: - Internal Helpers

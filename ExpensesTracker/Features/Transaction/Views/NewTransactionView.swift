@@ -116,21 +116,30 @@ struct NewTransactionView: View {
                 .disabled(amount.isEmpty || selectedLabel == nil)
             }
         }
-        .alert(item: $viewModel.message) { message in
-            Alert(
-                title: Text(message.isSuccess ? "Success" : "Error"),
-                message: Text(message.text),
-                dismissButton: .default(Text("Got it!")) {
-                    if message.isSuccess {
-                        dismiss()
-                    }
+        .alert(
+            viewModel.message?.isSuccess == true ? "Success" : "Error",
+            isPresented: Binding(
+                get: { viewModel.message != nil },
+                set: { if !$0 { viewModel.message = nil } }
+            ),
+            presenting: viewModel.message
+        ) { message in
+            Button {
+                if message.isSuccess {
+                    dismiss()
                 }
-            )
+            } label: {
+                Text("Got it!")
+            }
+        } message: { message in
+            Text(message.text)
         }
         .sheet(isPresented: $isShowingCreateLabelSheet) {
-            NewCategoryView()
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
+            NewTransactionLabelView(
+                viewModel: $viewModel,
+                isShowingCreateLabelSheet: $isShowingCreateLabelSheet
+            )
+            .presentationDetents([.large])
         }
         .onAppear {
             if selectedLabel == nil {
