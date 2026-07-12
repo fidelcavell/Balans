@@ -43,7 +43,6 @@ struct NewTransactionView: View {
                         Text(type.label).tag(type)
                     }
                 }
-                .pickerStyle(.navigationLink)
                 
             } header: {
                 Text("Transaction Details")

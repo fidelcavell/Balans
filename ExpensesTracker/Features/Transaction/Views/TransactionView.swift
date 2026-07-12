@@ -168,6 +168,8 @@ struct TransactionView: View {
                 switch route {
                 case .newTransaction:
                     NewTransactionView()
+                case .detailTransaction(let transaction):
+                    DetailTransactionView(selectedTransaction: transaction)
                 }
             }
         }

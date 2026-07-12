@@ -12,6 +12,7 @@ import Observation
 // MARK: - Define the possible app route
 enum AppRoute: Hashable {
     case newTransaction
+    case detailTransaction(Transaction)
 }
 
 // MARK: - App Router Coordinator

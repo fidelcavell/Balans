@@ -9,10 +9,11 @@ import SwiftUI
 import SwiftData
 
 struct TransactionCardView: View {
+    @Environment(Router.self) private var router
+    
     let transaction: Transaction
     
-    // 1. State variable to drive the animation
-    @State private var isAnanimated = false
+    @State private var isAnimated = false
     
     var categoryName: String {
         transaction.label?.title ?? "No Category"
@@ -39,8 +40,10 @@ struct TransactionCardView: View {
     }
     
     var body: some View {
+        @Bindable var router = router
+        
         Button {
-            // TODO - Navigate to specific transaction's data
+            router.navigate(to: .detailTransaction(transaction))
         } label: {
             HStack(spacing: 16) {
                 Image(systemName: categoryIcon)
@@ -85,13 +88,13 @@ struct TransactionCardView: View {
             .padding(.vertical, 6)
             
             // Animation Modifiers
-            .opacity(isAnanimated ? 1.0 : 0.0)
-            .scaleEffect(isAnanimated ? 1.0 : 0.92)
-            .offset(y: isAnanimated ? 0 : 15)
+            .opacity(isAnimated ? 1.0 : 0.0)
+            .scaleEffect(isAnimated ? 1.0 : 0.92)
+            .offset(y: isAnimated ? 0 : 15)
             .onAppear {
                 // Smooth spring animation on load
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0)) {
-                    isAnanimated = true
+                    isAnimated = true
                 }
             }
         }
