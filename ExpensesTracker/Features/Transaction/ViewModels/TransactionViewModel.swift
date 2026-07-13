@@ -59,7 +59,14 @@ final class TransactionViewModel {
         )
         
         guard let existing = try? context.fetch(descriptor).first else {
+            self.message = .failure("No Transaction found!")
             print("[Transaction VM] Record not found for update: \(id)")
+            return
+        }
+        
+        guard label != nil else {
+            self.message = .failure("No Transaction Label provided!")
+            print("[Transaction VM] No Transaction Label provided!")
             return
         }
         

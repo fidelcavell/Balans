@@ -56,7 +56,6 @@ struct EditTransactionView: View {
                             .tag(label as TransactionLabel?)
                         }
                     }
-                    .pickerStyle(.navigationLink)
                     
                 } header: {
                     Text("Classification")
@@ -99,11 +98,28 @@ struct EditTransactionView: View {
                             label: selectedLabel
                         )
                         
-                        isShowingEditSheet = false
                     } label: {
                         Text("Save")
                     }
                 }
+            }
+            .alert(
+                viewModel.message?.isSuccess == true ? "Success" : "Error",
+                isPresented: Binding(
+                    get: { viewModel.message != nil },
+                    set: { if !$0 { viewModel.message = nil } }
+                ),
+                presenting: viewModel.message
+            ) { message in
+                Button {
+                    if message.isSuccess {
+                        isShowingEditSheet = false
+                    }
+                } label: {
+                    Text("Got it!")
+                }
+            } message: { message in
+                Text(message.text)
             }
             .onAppear {
                 amount = selectedTransaction.amount
