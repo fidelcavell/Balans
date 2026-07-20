@@ -17,7 +17,7 @@ struct AppTabView: View {
                 TransactionView()
             }
             
-            Tab("", systemImage: "lightbulb.max") {
+            Tab("", systemImage: "lightbulb.circle.fill") {
                 InsightView()
             }
             
