@@ -109,7 +109,7 @@ struct YearlyTrendChartView: View {
                 }
                 .frame(height: 140)
             } else {
-                ContentUnavailableView("No Data Available", systemImage: "chart.xyaxis.line", description: Text("Add transactions to preview yearly trends."))
+                ContentUnavailableView("No Data Available", systemImage: Icon.xyAxisLineChart, description: Text("Add transactions to preview yearly trends."))
                     .frame(height: 140)
             }
         }

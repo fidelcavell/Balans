@@ -108,7 +108,7 @@ struct TransactionView: View {
                     Button {
                         router.navigate(to: .newTransaction)
                     } label: {
-                        Image(systemName: "plus")
+                        Image(systemName: Icon.plus)
                     }
                 }
                 
@@ -121,7 +121,7 @@ struct TransactionView: View {
                         HStack(spacing: 6) {
                             Text(selectedDate.formatted(.dateTime.month(.abbreviated).year()))
                             
-                            Image(systemName: "chevron.down")
+                            Image(systemName: Icon.chevronDown)
                                 .font(.caption2)
                         }
                         .font(.subheadline)
@@ -156,7 +156,7 @@ struct TransactionView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Text(selectedType.label)
-                            Image(systemName: "chevron.down")
+                            Image(systemName: Icon.chevronDown)
                                 .font(.caption2)
                         }
                         .font(.subheadline)

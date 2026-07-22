@@ -58,7 +58,7 @@ struct EditPreferenceView: View {
                     Button {
                         isEditing = false
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: Icon.closeMark)
                     }
                 }
             }

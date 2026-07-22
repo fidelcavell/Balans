@@ -12,11 +12,11 @@ struct NewTransactionLabelView: View {
     @Binding var isShowingCreateLabelSheet: Bool
     
     @State private var title: String = ""
-    @State private var selectedSymbol: String = "tag.fill"
+    @State private var selectedSymbol: String = IconLabel.tag.rawValue
     @State private var selectedColor: Color = .blue
     @State private var hexColorString: String = "0000FF" // Stores the "FFFFFF" format as default
     
-    let availableSymbols = ["tag.fill", "cart.fill", "creditcard.fill", "bag.fill", "banknote.fill"]
+    let availableSymbols = IconLabel.allCases
     
     var body: some View {
         NavigationStack {
@@ -24,17 +24,17 @@ struct NewTransactionLabelView: View {
                 Section {
                     TextField("e.g., Groceries", text: $title)
                 } header: {
-                    Text("Transaction Label Title || \(viewModel.message?.text ?? "MSG")")
+                    Text("Transaction Label Title")
                 }
                 
                 Section(header: Text("Select Icon")) {
                     Picker("Symbol", selection: $selectedSymbol) {
                         ForEach(availableSymbols, id: \.self) { symbol in
                             HStack {
-                                Image(systemName: symbol)
-                                Text(symbol.replacingOccurrences(of: ".fill", with: "").capitalized)
+                                Image(systemName: symbol.rawValue)
+                                Text(symbol.rawValue.replacingOccurrences(of: ".fill", with: "").capitalized)
                             }
-                            .tag(symbol)
+                            .tag(symbol.rawValue)
                         }
                     }
                     .pickerStyle(.navigationLink)
@@ -89,7 +89,7 @@ struct NewTransactionLabelView: View {
                     Button {
                         isShowingCreateLabelSheet = false
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: Icon.closeMark)
                     }
                 }
             }

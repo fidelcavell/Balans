@@ -25,7 +25,7 @@ struct EditTransactionView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Amount", value: $amount, format: .currency(code: "IDR"))
+                    TextField("Amount", value: $amount, format: .number.grouping(.never))
                         .keyboardType(.decimalPad)
                         .font(.title2)
                         .bold()
@@ -83,7 +83,7 @@ struct EditTransactionView: View {
                     Button {
                         isShowingEditSheet = false
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: Icon.closeMark)
                     }
                 }
                 

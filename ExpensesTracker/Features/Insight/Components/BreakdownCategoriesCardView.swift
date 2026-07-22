@@ -50,14 +50,9 @@ struct BreakdownCategoriesCardView: View {
                         .padding()
                         .background(isSelected ? item.label.tint.opacity(0.12) : Color.clear)
                         .contentShape(Rectangle())
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                selectedSector = (selectedSector == item.label.title) ? nil : item.label.title
-                            }
-                        }
                     }
                 } else {
-                    ContentUnavailableView("No Category Breakdown", systemImage: "tray", description: Text("No expenses recorded for this selection."))
+                    ContentUnavailableView("No Category Breakdown", systemImage: Icon.tray, description: Text("No expenses recorded for this selection."))
                         .padding(.vertical, 24)
                 }
             }

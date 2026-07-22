@@ -234,7 +234,7 @@ struct InsightView: View {
                         HStack(spacing: 6) {
                             Text(selectedDate.formatted(.dateTime.month(.abbreviated).year()))
                             
-                            Image(systemName: "chevron.down")
+                            Image(systemName: Icon.chevronDown)
                                 .font(.caption2)
                         }
                         .font(.subheadline)
@@ -277,7 +277,7 @@ struct InsightView: View {
                 Spacer()
                 
                 HStack(spacing: 4) {
-                    Image(systemName: "chart.pie.fill")
+                    Image(systemName: Icon.pieChart)
                         .font(.system(size: 11))
                         .padding(6)
                         .background(selectedChartTab == 0 ? Color.accentColor : Color(.tertiarySystemGroupedBackground))
@@ -287,7 +287,7 @@ struct InsightView: View {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { selectedChartTab = 0 }
                         }
                     
-                    Image(systemName: "chart.xyaxis.line")
+                    Image(systemName: Icon.xyAxisLineChart)
                         .font(.system(size: 11))
                         .padding(6)
                         .background(selectedChartTab == 1 ? Color.accentColor : Color(.tertiarySystemGroupedBackground))

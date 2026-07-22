@@ -23,7 +23,7 @@ struct DetailTransactionView: View {
             Section {
                 VStack(spacing: 12) {
                     HStack(spacing: 6) {
-                        Image(systemName: selectedTransaction.label?.symbol ?? "questionmark.circle")
+                        Image(systemName: selectedTransaction.label?.symbol ?? Icon.question)
                         Text(selectedTransaction.label?.title ?? "No Category")
                     }
                     .font(.subheadline)
@@ -54,7 +54,7 @@ struct DetailTransactionView: View {
             // MARK: - Transaction Meta Data
             Section {
                 HStack(spacing: 16) {
-                    Image(systemName: "calendar")
+                    Image(systemName: Icon.calendar)
                         .font(.system(size: 16))
                         .frame(width: 30, height: 30)
                         .foregroundStyle(.white)
@@ -100,13 +100,13 @@ struct DetailTransactionView: View {
                 Button {
                     isShowingEditSheet = true
                 } label: {
-                    Image(systemName: "square.and.pencil")
+                    Image(systemName: Icon.editButton)
                 }
                 
                 Button(role: .destructive) {
                     isShowingDeleteAlert = true
                 } label: {
-                    Image(systemName: "trash")
+                    Image(systemName: Icon.deletebutton)
                         .foregroundStyle(.red)
                 }
             }

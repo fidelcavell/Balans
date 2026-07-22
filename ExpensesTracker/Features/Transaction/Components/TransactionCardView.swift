@@ -20,7 +20,7 @@ struct TransactionCardView: View {
     }
     
     var categoryIcon: String {
-        transaction.label?.symbol ?? "questionmark.circle"
+        transaction.label?.symbol ?? Icon.question
     }
     
     var categoryColor: Color {
@@ -71,7 +71,7 @@ struct TransactionCardView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(isIncome ? .green : .red)
                     
-                    Image(systemName: "chevron.right")
+                    Image(systemName: Icon.chevronRight)
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }

@@ -58,7 +58,7 @@ struct DonutChartView: View {
                     .transition(.scale.combined(with: .opacity))
                 }
             } else {
-                ContentUnavailableView("No Data Available", systemImage: "chart.pie", description: Text("Try picking another timeframe."))
+                ContentUnavailableView("No Data Available", systemImage: Icon.pieChart, description: Text("Try picking another timeframe."))
                     .frame(height: 170)
             }
         }

@@ -76,7 +76,7 @@ struct NewTransactionView: View {
                     isShowingCreateLabelSheet = true
                 } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: "plus.circle.fill")
+                        Image(systemName: Icon.plus)
                         Text("Missing a label? Create New")
                     }
                     .font(.footnote)

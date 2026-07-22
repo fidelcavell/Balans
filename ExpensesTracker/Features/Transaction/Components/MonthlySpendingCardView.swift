@@ -26,6 +26,21 @@ struct MonthlySpendingCardView: View {
         }
     }
     
+    @ViewBuilder
+    private var illustrationImage: some View {
+        Group {
+            if spendingRatio >= 0.9 {
+                Image(systemName: Icon.badSpendingRatio)
+            } else if spendingRatio >= 0.75 {
+                Image(systemName: Icon.warningSpendingRatio)
+            } else {
+                Image(systemName: Icon.goodSpendingRatio)
+            }
+        }
+        .font(.title2)
+        .foregroundColor(progressBarColor.opacity(0.8))
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -43,17 +58,7 @@ struct MonthlySpendingCardView: View {
                 
                 Spacer()
                 
-                Image(systemName: "chart.line.uptrend.xyaxis.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(progressBarColor.opacity(0.8))
-                
-                Image(systemName: "exclamationmark.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(progressBarColor.opacity(0.8))
-                
-                Image(systemName: "chart.line.downtrend.xyaxis.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(progressBarColor.opacity(0.8))
+                illustrationImage
             }
             
             VStack(spacing: 6) {
