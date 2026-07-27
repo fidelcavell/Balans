@@ -14,9 +14,19 @@ import SwiftData
 final class SettingsViewModel {
     // MARK: - Dependencies
     private let context = DataProvider.shared.context
+    let notificationManager: NotificationManager
     
     // MARK: - Published State
     var message: StateMessage? = nil
+    
+    init (notificationManager: NotificationManager = .shared) {
+        self.notificationManager = notificationManager
+    }
+    
+    var isNotificationEnabled: Bool {
+        get { notificationManager.isNotificationsEnabled && notificationManager.isAuthorized }
+        set { notificationManager.toggleNotifications(turnOn: newValue) }
+    }
     
     // MARK: - Functions
     /// Add new preference record
@@ -31,6 +41,7 @@ final class SettingsViewModel {
                 existingPreference.monthlySpendingLimit = monthlySpendingLimit
                 
                 save()
+                notificationManager.checkAndNotifyBudgetLimit(context: context)
                 self.message = .success("Your preference has been updated!")
                 return
             }
@@ -44,6 +55,7 @@ final class SettingsViewModel {
         context.insert(newPreference)
         
         save()
+        notificationManager.checkAndNotifyBudgetLimit(context: context)
         self.message = .success("New Preference has been added!")
     }
     

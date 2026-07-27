@@ -41,6 +41,7 @@ final class TransactionViewModel {
         newTransaction.label = label
         
         save()
+        NotificationManager.shared.checkAndNotifyBudgetLimit(context: context)
         self.message = .success("New Transaction has been added!")
     }
     
@@ -77,6 +78,7 @@ final class TransactionViewModel {
         existing.label = label
         
         save()
+        NotificationManager.shared.checkAndNotifyBudgetLimit(context: context)
         self.message = .success("The Transaction has been updated!")
     }
     
@@ -84,6 +86,7 @@ final class TransactionViewModel {
     func deleteRecord(_ selectedTransaction: Transaction) {
         context.delete(selectedTransaction)
         save()
+        NotificationManager.shared.checkAndNotifyBudgetLimit(context: context)
         self.message = .success("The Transaction has been deleted!")
     }
     
@@ -97,6 +100,7 @@ final class TransactionViewModel {
         if let selectedTransaction = try? context.fetch(descriptor).first {
             context.delete(selectedTransaction)
             save()
+            NotificationManager.shared.checkAndNotifyBudgetLimit(context: context)
             self.message = .success("The Transaction has been deleted!")
         }
     }

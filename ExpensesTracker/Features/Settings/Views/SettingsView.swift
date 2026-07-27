@@ -36,9 +36,10 @@ struct SettingsView: View {
                 }
                 
                 Section {
-                    Toggle(isOn: .constant(true)) {
+                    Toggle(isOn: $viewModel.isNotificationEnabled) {
                         Text("Notification")
                     }
+                    
                 } header: {
                     Text("Additional Preferences")
                 }
