@@ -72,6 +72,11 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
                     case .authorized, .provisional, .ephemeral:
                         self.isNotificationsEnabled = true
                         self.isAuthorized = true
+                        
+                        if let context = DataProvider.shared.context as ModelContext? {
+                            self.checkAndNotifyBudgetLimit(context: context)
+                        }
+                        
                     @unknown default:
                         break
                     }
@@ -137,7 +142,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         
         let ratio = currentMonthSpending / limit
         
-        if ratio >= 0.70 && ratio <= 0.85 {
+        if ratio >= 0.75 {
             let percentageUsed = Int(ratio * 100)
             
             // Check if budget warning is already pending to prevent duplicate spam
@@ -147,8 +152,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
                     Task { @MainActor in
                         self.scheduleNotification(
                             title: "Budget Warning ⚠️",
-                            body: "You have used \(percentageUsed)% of your monthly spending limit (\(Int(currentMonthSpending).formatted(.currency(code: "IDR")))/\(Int(limit).formatted(.currency(code: "IDR")))).",
-                            timeInterval: 5
+                            body: "You have used \(percentageUsed)% of your monthly spending limit (\(Int(currentMonthSpending).formatted(.currency(code: "IDR"))) of \(Int(limit).formatted(.currency(code: "IDR")))).",
+                            timeInterval: 1
                         )
                     }
                 }
