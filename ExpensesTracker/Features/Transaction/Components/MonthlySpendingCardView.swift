@@ -8,52 +8,55 @@
 import SwiftUI
 
 struct MonthlySpendingCardView: View {
-    var totalCurrentSpending: Double
-    var monthlySpendingLimit: Double
+    var totalIncome: Double
+    var totalExpense: Double
     
-    private var spendingRatio: Double {
-        guard monthlySpendingLimit > 0 else { return 0 }
-        return min(totalCurrentSpending / monthlySpendingLimit, 1.0)
+    private var totalBalance: Double {
+        return totalIncome - totalExpense
     }
     
-    private var progressBarColor: Color {
-        if spendingRatio >= 0.9 {
-            return .red
-        } else if spendingRatio >= 0.75 {
-            return .orange
-        } else {
-            return .green
-        }
+    private var totalVolume: Double {
+        return totalIncome + totalExpense
+    }
+    
+    private var incomeRatio: Double {
+        guard totalVolume > 0 else { return 0.0 }
+        return totalIncome / totalVolume
+    }
+    
+    private var expenseRatio: Double {
+        guard totalVolume > 0 else { return 0.0 }
+        return 1.0 - incomeRatio
     }
     
     @ViewBuilder
     private var illustrationImage: some View {
         Group {
-            if spendingRatio >= 0.9 {
-                Image(systemName: Icon.badSpendingRatio)
-            } else if spendingRatio >= 0.75 {
-                Image(systemName: Icon.warningSpendingRatio)
+            if (totalBalance >= 0) {
+                Image(systemName: Icon.goodBalance)
+                    .foregroundStyle(Color.green.opacity(0.8))
             } else {
-                Image(systemName: Icon.goodSpendingRatio)
+                Image(systemName: Icon.badBalance)
+                    .foregroundStyle(Color.red.opacity(0.8))
             }
         }
         .font(.title2)
-        .foregroundColor(progressBarColor.opacity(0.8))
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Monthly Spending")
+                    Text("Monthly Balance")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
-                    Text(totalCurrentSpending, format: .currency(code: "IDR"))
-                        .font(.system(.title, design: .rounded))
+                    Text(totalBalance, format: .currency(code: "IDR"))
+                        .font(.title2)
+                        .fontDesign(.rounded)
                         .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(totalBalance >= 0 ? Color.green : Color.red)
                 }
                 
                 Spacer()
@@ -61,41 +64,64 @@ struct MonthlySpendingCardView: View {
                 illustrationImage
             }
             
-            VStack(spacing: 6) {
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color(.systemGray5))
-                            .frame(height: 10)
-                            .shadow(color: Color.black.opacity(0.12), radius: 2, x: 0, y: 2)
-                        
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [progressBarColor.opacity(0.85), progressBarColor]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Income: \(totalIncome, format: .currency(code: "IDR").precision(.fractionLength(0)))")
+                        .font(.footnote)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                    
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color(.systemGray5))
+                                .frame(height: 10)
+                                .shadow(color: Color.black.opacity(0.12), radius: 2, x: 0, y: 2)
+                            
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [.green.opacity(0.85), .green]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
                                 )
-                            )
-                            .frame(width: geometry.size.width * CGFloat(spendingRatio), height: 10)
-                            .shadow(color: progressBarColor.opacity(0.4), radius: 4, x: 0, y: 2)
-                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: totalCurrentSpending)
+                                .frame(width: geometry.size.width * CGFloat(incomeRatio), height: 10)
+                                .shadow(color: .green.opacity(0.4), radius: 4, x: 0, y: 2)
+                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: totalBalance)
+                        }
                     }
+                    .frame(height: 10)
                 }
-                .frame(height: 10)
-            }
-            
-            HStack {
-                Text("Limit: \(monthlySpendingLimit, format: .currency(code: "IDR"))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
                 
-                Spacer()
-                
-                Text("\(Int(spendingRatio * 100))% Used")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(progressBarColor)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Expense: \(totalExpense, format: .currency(code: "IDR").precision(.fractionLength(0)))")
+                        .font(.footnote)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                    
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color(.systemGray5))
+                                .frame(height: 10)
+                                .shadow(color: Color.black.opacity(0.12), radius: 2, x: 0, y: 2)
+                            
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [.red.opacity(0.85), .red]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .frame(width: geometry.size.width * CGFloat(expenseRatio), height: 10)
+                                .shadow(color: .red.opacity(0.4), radius: 4, x: 0, y: 2)
+                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: totalBalance)
+                        }
+                    }
+                    .frame(height: 10)
+                }
             }
         }
         .padding(.all, 20)
@@ -132,14 +158,17 @@ struct MonthlySpendingCardView: View {
         Color(.systemGroupedBackground).ignoresSafeArea()
         
         VStack(spacing: 24) {
-            // Safe Mode Example
-            MonthlySpendingCardView(totalCurrentSpending: 45000000, monthlySpendingLimit: 100000000)
+            // Expense = 0
+            MonthlySpendingCardView(totalIncome: 45000000, totalExpense: 0)
             
-            // Warning Mode Example
-            MonthlySpendingCardView(totalCurrentSpending: 82000000, monthlySpendingLimit: 100000000)
+            // Income = 0
+            MonthlySpendingCardView(totalIncome: 0, totalExpense: 100000000)
             
-            // Critical Over-budget Example
-            MonthlySpendingCardView(totalCurrentSpending: 105000000, monthlySpendingLimit: 100000000)
+            // Both are 0
+            MonthlySpendingCardView(totalIncome: 0, totalExpense: 0)
+            
+            // Other case
+            MonthlySpendingCardView(totalIncome: 150000, totalExpense: 340000)
         }
     }
 }

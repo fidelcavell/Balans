@@ -34,7 +34,34 @@ struct TransactionView: View {
         }
     }
     
-    var currentMonthSpending: Double {
+    // Computed property to group transactions by calendar day
+    var dateGroupedTransactions: [(key: Date, value: [Transaction])] {
+        let calendar = Calendar.current
+        
+        // Group transactions by the start of their date (ignoring hours, minutes, seconds)
+        let grouped = Dictionary(grouping: filteredTransactions) { transaction in
+            calendar.startOfDay(for: transaction.occurredAt)
+        }
+        
+        // Sort keys in descending order (newest dates first)
+        return grouped.sorted { $0.key > $1.key }
+    }
+    
+    var currentMonthIncome: Double {
+        let calendar = Calendar.current
+        let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
+        
+        return transactions.lazy
+            .filter { transaction in
+                guard transaction.type == .inflow else { return false }
+                let tComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
+                
+                return tComponents.month == filterComponents.month && tComponents.year == filterComponents.year
+            }
+            .reduce(0) { $0 + $1.amount }
+    }
+    
+    var currentMonthExpense: Double {
         let calendar = Calendar.current
         let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
         
@@ -54,8 +81,8 @@ struct TransactionView: View {
         NavigationStack(path: $router.path) {
             VStack(spacing: 0) {
                 MonthlySpendingCardView(
-                    totalCurrentSpending: currentMonthSpending,
-                    monthlySpendingLimit: Double(preference.monthlySpendingLimit)
+                    totalIncome: currentMonthIncome,
+                    totalExpense: currentMonthExpense,
                 )
                 .padding(.top, 12)
                 
@@ -86,15 +113,29 @@ struct TransactionView: View {
                     }
                 } else {
                     ScrollView {
-                        VStack(spacing: 10) {
-                            ForEach(filteredTransactions) { transaction in
-                                TransactionCardView(transaction: transaction)
-                                    .scrollTransition(.animated, axis: .vertical) { content, phase in
-                                        content
-                                            .opacity(phase.isIdentity ? 1.0 : 0.6)
-                                            .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
-                                            .offset(y: phase.isIdentity ? 0 : (phase == .topLeading ? -8 : 8))
+                        LazyVStack(alignment: .leading, spacing: 16) {
+                            ForEach(dateGroupedTransactions, id: \.key) { date, transactions in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    // Date Header
+                                    Text(date, format: .dateTime.day().month(.wide).year())
+                                        .font(.footnote)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.secondary)
+                                        .padding(.horizontal)
+                                    
+                                    // Transactions for this specific date
+                                    VStack(spacing: 8) {
+                                        ForEach(transactions) { transaction in
+                                            TransactionCardView(transaction: transaction)
+                                                .scrollTransition(.animated, axis: .vertical) { content, phase in
+                                                    content
+                                                        .opacity(phase.isIdentity ? 1.0 : 0.6)
+                                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
+                                                        .offset(y: phase.isIdentity ? 0 : (phase == .topLeading ? -8 : 8))
+                                                }
+                                        }
                                     }
+                                }
                             }
                         }
                         .padding(.horizontal, 8)

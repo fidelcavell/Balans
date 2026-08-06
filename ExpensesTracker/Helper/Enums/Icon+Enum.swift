@@ -24,11 +24,9 @@ enum Icon {
     
     static let deletebutton = "trash"
     
-    static let goodSpendingRatio = "chart.line.uptrend.xyaxis.circle.fill"
+    static let goodBalance = "checkmark.circle.fill"
     
-    static let warningSpendingRatio = "exclamationmark.circle.fill"
-    
-    static let badSpendingRatio = "chart.line.downtrend.xyaxis.circle.fill"
+    static let badBalance = "exclamationmark.circle.fill"
     
     static let pieChart = "chart.pie.fill"
     
