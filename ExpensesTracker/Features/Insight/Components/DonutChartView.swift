@@ -44,7 +44,7 @@ struct DonutChartView: View {
                             Text(String(format: "%.1f%%", (activeCategory.amount / totalTransactionExpenseByMonth) * 100))
                                 .font(.footnote.bold())
                         } else {
-                            Text("Total Outflow")
+                            Text("Total Expenses")
                                 .font(.system(size: 10))
                                 .foregroundStyle(.secondary)
                             Text(totalTransactionExpenseByMonth, format: .currency(code: "IDR"))

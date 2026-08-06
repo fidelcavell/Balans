@@ -267,9 +267,9 @@ struct InsightView: View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(selectedChartTab == 0 ? "Expense Distribution" : "Income vs Expenses Trend")
+                    Text(selectedChartTab == 0 ? "Expense Distribution" : "Your Balances Trend in \(selectedYear, format: .number.grouping(.never))")
                         .font(.headline)
-                    Text(selectedChartTab == 0 ? "Interactive category breakdown" : "Yearly overview of savings trajectory (\(selectedYear))")
+                    Text(selectedChartTab == 0 ? "Interactive category breakdown" : "Yearly overview of savings trajectory")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

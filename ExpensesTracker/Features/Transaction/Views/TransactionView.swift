@@ -83,6 +83,7 @@ struct TransactionView: View {
                 MonthlySpendingCardView(
                     totalIncome: currentMonthIncome,
                     totalExpense: currentMonthExpense,
+                    monthlySpendingLimit: Double(preference.monthlySpendingLimit)
                 )
                 .padding(.top, 12)
                 

@@ -29,7 +29,6 @@ struct SettingsView: View {
                 }
                 
                 Section {
-                    LabeledContent("Current Spending", value: preference.currentSpending.formatted(.currency(code: "IDR")))
                     LabeledContent("Monthly Spending Limit", value: preference.monthlySpendingLimit.formatted(.currency(code: "IDR")))
                 } header: {
                     Text("Budgeting Details")
