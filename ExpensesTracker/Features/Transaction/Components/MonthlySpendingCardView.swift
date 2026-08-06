@@ -193,34 +193,19 @@ struct MonthlySpendingCardView: View {
         }
         .padding(.all, 20)
         .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color(.secondarySystemGroupedBackground),
-                                Color(.secondarySystemGroupedBackground)
-                                    .opacity(0.95),
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(.secondarySystemGroupedBackground),
+                            Color(.secondarySystemGroupedBackground)
+                                .opacity(0.95),
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     )
-                
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.white.opacity(0.7), Color.clear,
-                                Color.black.opacity(0.03),
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.5
-                    )
-            }
-                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 8)
+                )
+                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 8)
                 .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
         )
         .padding(.horizontal, 16)
