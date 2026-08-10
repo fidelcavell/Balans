@@ -7,15 +7,73 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5FAAE8503024E3DC00C18414 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FAAE84F3024E3DC00C18414 /* WidgetKit.framework */; };
+		5FAAE8523024E3DC00C18414 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FAAE8513024E3DC00C18414 /* SwiftUI.framework */; };
+		5FAAE85D3024E3DC00C18414 /* BalansWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5FAAE84D3024E3DC00C18414 /* BalansWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5FC807562FD09C350038387C /* DotLottie in Frameworks */ = {isa = PBXBuildFile; productRef = 5FC807552FD09C350038387C /* DotLottie */; };
 		5FC807582FD09C350038387C /* DotLottiePlayer in Frameworks */ = {isa = PBXBuildFile; productRef = 5FC807572FD09C350038387C /* DotLottiePlayer */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		5FAAE85B3024E3DC00C18414 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5FEA10A12FCBE5C10085DE9F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5FAAE84C3024E3DC00C18414;
+			remoteInfo = BalansWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5FAAE85E3024E3DC00C18414 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				5FAAE85D3024E3DC00C18414 /* BalansWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		5FAAE84D3024E3DC00C18414 /* BalansWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BalansWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5FAAE84F3024E3DC00C18414 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		5FAAE8513024E3DC00C18414 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		5FEA10A92FCBE5C10085DE9F /* ExpensesTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpensesTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5FAAE8613024E3DC00C18414 /* Exceptions for "BalansWidget" folder in "BalansWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5FAAE84C3024E3DC00C18414 /* BalansWidgetExtension */;
+		};
+		5FB9984A30297E1300DDC36B /* Exceptions for "BalansWidget" folder in "ExpensesTracker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Data/WidgetData.swift,
+				View/MediumWidgetView.swift,
+				View/SmallWidgetView.swift,
+			);
+			target = 5FEA10A82FCBE5C10085DE9F /* ExpensesTracker */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		5FAAE8533024E3DC00C18414 /* BalansWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5FB9984A30297E1300DDC36B /* Exceptions for "BalansWidget" folder in "ExpensesTracker" target */,
+				5FAAE8613024E3DC00C18414 /* Exceptions for "BalansWidget" folder in "BalansWidgetExtension" target */,
+			);
+			path = BalansWidget;
+			sourceTree = "<group>";
+		};
 		5FEA10AB2FCBE5C10085DE9F /* ExpensesTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ExpensesTracker;
@@ -24,6 +82,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5FAAE84A3024E3DC00C18414 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FAAE8523024E3DC00C18414 /* SwiftUI.framework in Frameworks */,
+				5FAAE8503024E3DC00C18414 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5FEA10A62FCBE5C10085DE9F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -36,10 +103,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5FAAE84E3024E3DC00C18414 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5FAAE84F3024E3DC00C18414 /* WidgetKit.framework */,
+				5FAAE8513024E3DC00C18414 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		5FEA10A02FCBE5C10085DE9F = {
 			isa = PBXGroup;
 			children = (
 				5FEA10AB2FCBE5C10085DE9F /* ExpensesTracker */,
+				5FAAE8533024E3DC00C18414 /* BalansWidget */,
+				5FAAE84E3024E3DC00C18414 /* Frameworks */,
 				5FEA10AA2FCBE5C10085DE9F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				5FEA10A92FCBE5C10085DE9F /* ExpensesTracker.app */,
+				5FAAE84D3024E3DC00C18414 /* BalansWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,6 +134,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5FAAE84C3024E3DC00C18414 /* BalansWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5FAAE8623024E3DC00C18414 /* Build configuration list for PBXNativeTarget "BalansWidgetExtension" */;
+			buildPhases = (
+				5FAAE8493024E3DC00C18414 /* Sources */,
+				5FAAE84A3024E3DC00C18414 /* Frameworks */,
+				5FAAE84B3024E3DC00C18414 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5FAAE8533024E3DC00C18414 /* BalansWidget */,
+			);
+			name = BalansWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = BalansWidgetExtension;
+			productReference = 5FAAE84D3024E3DC00C18414 /* BalansWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		5FEA10A82FCBE5C10085DE9F /* ExpensesTracker */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5FEA10B42FCBE5C10085DE9F /* Build configuration list for PBXNativeTarget "ExpensesTracker" */;
@@ -62,10 +163,12 @@
 				5FEA10A52FCBE5C10085DE9F /* Sources */,
 				5FEA10A62FCBE5C10085DE9F /* Frameworks */,
 				5FEA10A72FCBE5C10085DE9F /* Resources */,
+				5FAAE85E3024E3DC00C18414 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				5FAAE85C3024E3DC00C18414 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				5FEA10AB2FCBE5C10085DE9F /* ExpensesTracker */,
@@ -86,9 +189,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2650;
+				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
+					5FAAE84C3024E3DC00C18414 = {
+						CreatedOnToolsVersion = 26.6;
+					};
 					5FEA10A82FCBE5C10085DE9F = {
 						CreatedOnToolsVersion = 26.5;
 					};
@@ -112,11 +218,19 @@
 			projectRoot = "";
 			targets = (
 				5FEA10A82FCBE5C10085DE9F /* ExpensesTracker */,
+				5FAAE84C3024E3DC00C18414 /* BalansWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5FAAE84B3024E3DC00C18414 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5FEA10A72FCBE5C10085DE9F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -127,6 +241,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5FAAE8493024E3DC00C18414 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5FEA10A52FCBE5C10085DE9F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -136,7 +257,75 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		5FAAE85C3024E3DC00C18414 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5FAAE84C3024E3DC00C18414 /* BalansWidgetExtension */;
+			targetProxy = 5FAAE85B3024E3DC00C18414 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		5FAAE85F3024E3DC00C18414 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 96SXDK9ZFJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BalansWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BalansWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.id.ExpensesTracker.BalansWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5FAAE8603024E3DC00C18414 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 96SXDK9ZFJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BalansWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BalansWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.id.ExpensesTracker.BalansWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		5FEA10B22FCBE5C10085DE9F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -263,6 +452,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExpensesTracker/ExpensesTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 96SXDK9ZFJ;
@@ -296,6 +486,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExpensesTracker/ExpensesTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 96SXDK9ZFJ;
@@ -327,6 +518,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5FAAE8623024E3DC00C18414 /* Build configuration list for PBXNativeTarget "BalansWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5FAAE85F3024E3DC00C18414 /* Debug */,
+				5FAAE8603024E3DC00C18414 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5FEA10A42FCBE5C10085DE9F /* Build configuration list for PBXProject "ExpensesTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
