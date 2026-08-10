@@ -18,14 +18,12 @@ struct CreatePreferenceView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // MARK: - Header
                     Text("Let's set up your personal preferences to get started.")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.secondary)
                         .padding(.vertical, 16)
                     
-                    // MARK: - Section 1: Personal Data
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Personal Data")
                             .font(.subheadline)
@@ -52,7 +50,6 @@ struct CreatePreferenceView: View {
                         .cornerRadius(16)
                     }
                     
-                    // MARK: - Section 2: Monthly Spending Limit
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Monthly Spending Limit")
                             .font(.subheadline)
@@ -109,7 +106,6 @@ struct CreatePreferenceView: View {
                     .padding(.vertical, 24)
                 }
                 .padding(.horizontal, 32)
-                .background(Color(.systemGroupedBackground))
                 .alert(item: $viewModel.message) { message in
                     Alert(
                         title: Text(message.isSuccess ? "Success" : "Error"),
@@ -122,6 +118,7 @@ struct CreatePreferenceView: View {
                     )
                 }
             }
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
         }
     }
 }
