@@ -47,6 +47,7 @@ struct WidgetDataWriter {
 
         defaults.set(encoded, forKey: widgetDataKey)
 
+        print("Reload timeline widget")
         // Tell WidgetKit to reload the timeline immediately
         WidgetCenter.shared.reloadTimelines(ofKind: "BalansWidget")
     }

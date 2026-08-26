@@ -125,12 +125,13 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         let transactionDescriptor = FetchDescriptor<Transaction>()
         guard let transactions = try? context.fetch(transactionDescriptor) else { return }
         
-        let currentMonthSpending = transactions
-            .filter { transaction in
-                guard transaction.type == .outflow else { return false }
-                let tComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
-                return tComponents.month == currentComponents.month && tComponents.year == currentComponents.year
-            }
+        let currentMonthTransactions = transactions.filter { transaction in
+            let tComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
+            return tComponents.month == currentComponents.month && tComponents.year == currentComponents.year
+        }
+        
+        let currentMonthSpending = currentMonthTransactions
+            .filter { $0.type == .outflow }
             .reduce(0.0) { $0 + $1.amount }
         
         // Update preference currentSpending in DB
@@ -138,6 +139,15 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         try? context.save()
         
         let limit = Double(preference.monthlySpendingLimit)
+        
+        // Update widget data
+        WidgetDataWriter.write(
+            transactions: currentMonthTransactions,
+            monthlySpendingLimit: limit
+        )
+        
+        print("XXX: Do the widget write data")
+        
         guard limit > 0 else { return }
         
         let ratio = currentMonthSpending / limit
