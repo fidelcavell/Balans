@@ -154,6 +154,14 @@ struct TransactionView: View {
                     }
                 }
                 
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        router.navigate(to: .camera)
+                    } label: {
+                        Image(systemName: Icon.camera)
+                    }
+                }
+                
                 ToolbarSpacer()
                 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -210,6 +218,8 @@ struct TransactionView: View {
                 switch route {
                 case .newTransaction:
                     NewTransactionView()
+                case .camera:
+                    CameraView()
                 case .detailTransaction(let transaction):
                     DetailTransactionView(selectedTransaction: transaction)
                 }

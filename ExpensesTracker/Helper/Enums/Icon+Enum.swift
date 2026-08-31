@@ -33,4 +33,6 @@ enum Icon {
     static let xyAxisLineChart = "chart.xyaxis.line"
     
     static let tray = "tray"
+    
+    static let camera = "camera.viewfinder"
 }
