@@ -14,39 +14,54 @@ final class OCRService {
     
     private init() {}
     
+    enum OCRError: Error {
+        case invalidImage
+        case noDocumentFound
+    }
+    
+    // A lightweight, UI-friendly representation of what we extracted.
+    struct RecognizedDocument {
+        let fullText: String
+        let paragraphs: [String]
+        let tables: [[[String]]] // [table][row][cell]
+    }
+    
     func extractText(from image: UIImage, completion: @escaping (String?) -> Void) {
-        guard let cgImage = image.cgImage else {
-            completion(nil)
-            return
-        }
-        
-        let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-        let request = VNRecognizeTextRequest { request, error in
-            guard let observations = request.results as? [VNRecognizedTextObservation], error == nil else {
-                completion(nil)
-                return
-            }
-            
-            let text = observations.compactMap {
-                $0.topCandidates(1).first?.string
-            }.joined(separator: "\n")
-            
-            completion(text)
-        }
-        
-        // Optimize for accuracy as receipts contain important numbers and text
-        request.recognitionLevel = .accurate
-        request.usesLanguageCorrection = true
-        
-        DispatchQueue.global(qos: .userInitiated).async {
+        Task {
             do {
-                try requestHandler.perform([request])
+                let document = try await extractStructuredText(from: image)
+                completion(document.fullText)
             } catch {
-                print("Unable to perform the requests: \(error).")
-                DispatchQueue.main.async {
-                    completion(nil)
-                }
+                print("Document recognition failed: \(error)")
+                completion(nil)
             }
         }
+    }
+    
+    // MARK: - New structured API by Vision Framework (iOS 26+)
+    @available(iOS 26.0, *)
+    func extractStructuredText(from image: UIImage) async throws -> RecognizedDocument {
+        guard let cgImage = image.cgImage else {
+            throw OCRError.invalidImage
+        }
+        
+        let request = RecognizeDocumentsRequest()
+        let observations = try await request.perform(on: cgImage)
+        
+        guard let document = observations.first?.document else {
+            throw OCRError.noDocumentFound
+        }
+        
+        let tables: [[[String]]] = document.tables.map { table in
+            table.rows.map { row in
+                row.map { $0.content.text.transcript }
+            }
+        }
+        
+        return RecognizedDocument(
+            fullText: document.text.transcript,
+            paragraphs: document.paragraphs.map { $0.transcript },
+            tables: tables
+        )
     }
 }

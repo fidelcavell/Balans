@@ -14,6 +14,8 @@ enum Icon {
     
     static let chevronRight = "chevron.right"
     
+    static let chevronBack = "chevron.backward"
+    
     static let closeMark = "xmark"
     
     static let question = "questionmark.circle"
