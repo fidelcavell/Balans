@@ -53,7 +53,7 @@ struct NewTransactionView: View {
                 .padding(.vertical, 4)
                 
                 Picker("Transaction Type", selection: $selectedType) {
-                    ForEach(TransactionType.allCases) { type in
+                    ForEach(TransactionType.allCases.filter { $0 != .all }) { type in
                         Text(type.label).tag(type)
                     }
                 }

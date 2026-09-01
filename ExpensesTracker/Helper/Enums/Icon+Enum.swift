@@ -36,5 +36,7 @@ enum Icon {
     
     static let tray = "tray"
     
-    static let camera = "camera.viewfinder"
+    static let scanReceipt = "document.viewfinder"
+    
+    static let addManually = "long.text.page.and.pencil"
 }

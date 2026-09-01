@@ -42,7 +42,7 @@ final class ReceiptParserService {
         Your only job is to extract structured transaction data from receipt text.
         
         Rules:
-        - Extract only the FINAL grand total of the receipt (could be either "TOTAL" or "AMOUNT" labeled).
+        - Extract only the FINAL grand total of the receipt (could be either "TOTAL" or "AMOUNT" labeled and pick number below it, if its blank then pick the next below).
         - Strip all currency symbols (Rp, IDR, $, €, etc.) and thousands separators from the amount.
         - The date must be in yyyy-MM-dd format. Leave null if no date is present.
         - The note should be the merchant/store name, max 60 characters.

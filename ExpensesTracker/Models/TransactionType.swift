@@ -8,6 +8,7 @@
 import Foundation
 
 enum TransactionType: String, Codable, CaseIterable, Identifiable {
+    case all
     case inflow
     case outflow
     
@@ -15,6 +16,7 @@ enum TransactionType: String, Codable, CaseIterable, Identifiable {
     
     var label: String {
         switch self {
+        case .all:     return "All"
         case .inflow:  return "Income"
         case .outflow: return "Expense"
         }
