@@ -12,7 +12,7 @@ struct TransactionView: View {
     @Environment(Router.self) private var router
     @State private var viewModel: TransactionViewModel = TransactionViewModel()
     
-    @State private var selectedType: TransactionType = .outflow
+    @State private var selectedType: TransactionType = .all
     @State private var selectedDate = Date()
     @State private var isDatePickerPresented = false
     
@@ -27,7 +27,7 @@ struct TransactionView: View {
         let filterComponents = calendar.dateComponents([.month, .year], from: selectedDate)
         
         return transactions.filter { transaction in
-            guard transaction.type == selectedType else { return false }
+            guard transaction.type == selectedType || selectedType == .all else { return false }
             let tComponents = calendar.dateComponents([.month, .year], from: transaction.occurredAt)
             
             return tComponents.month == filterComponents.month && tComponents.year == filterComponents.year
@@ -93,69 +93,64 @@ struct TransactionView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
+                    
                     Spacer()
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
                 
-                if filteredTransactions.isEmpty {
-                    VStack(spacing: 12) {
-                        Spacer()
-                        LottieAnimationView(fileName: "empty_box")
-                            .frame(width: 250, height: 250)
-                        Text("No Transactions")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                        Text("No transactions found for this selection.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                    }
-                } else {
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 16) {
-                            ForEach(dateGroupedTransactions, id: \.key) { date, transactions in
-                                VStack(alignment: .leading, spacing: 8) {
-                                    // Date Header
-                                    Text(date, format: .dateTime.day().month(.wide).year())
-                                        .font(.footnote)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.secondary)
-                                        .padding(.horizontal)
-                                    
-                                    // Transactions for this specific date
-                                    VStack(spacing: 8) {
-                                        ForEach(transactions) { transaction in
-                                            TransactionCardView(transaction: transaction)
-                                                .scrollTransition(.animated, axis: .vertical) { content, phase in
-                                                    content
-                                                        .opacity(phase.isIdentity ? 1.0 : 0.6)
-                                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
-                                                        .offset(y: phase.isIdentity ? 0 : (phase == .topLeading ? -8 : 8))
-                                                }
+                ZStack {
+                    if filteredTransactions.isEmpty {
+                        VStack(spacing: 12) {
+                            Spacer()
+                            LottieAnimationView(fileName: "empty_box")
+                                .frame(width: 250, height: 250)
+                            Text("No Transactions")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                            Text("No transactions found for this selection.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                        }
+                    } else {
+                        ScrollView {
+                            LazyVStack(alignment: .leading, spacing: 16) {
+                                ForEach(dateGroupedTransactions, id: \.key) { date, transactions in
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        // Date Header
+                                        Text(date, format: .dateTime.day().month(.wide).year())
+                                            .font(.footnote)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.secondary)
+                                            .padding(.horizontal)
+                                        
+                                        // Transactions for this specific date
+                                        VStack(spacing: 8) {
+                                            ForEach(transactions) { transaction in
+                                                TransactionCardView(transaction: transaction)
+                                                    .scrollTransition(.animated, axis: .vertical) { content, phase in
+                                                        content
+                                                            .opacity(phase.isIdentity ? 1.0 : 0.6)
+                                                            .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
+                                                            .offset(y: phase.isIdentity ? 0 : (phase == .topLeading ? -8 : 8))
+                                                    }
+                                            }
                                         }
                                     }
                                 }
                             }
+                            .padding(.horizontal, 8)
+                            .padding(.top, 4)
+                            .padding(.bottom, 32)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.top, 4)
-                        .padding(.bottom, 32)
                     }
+                    
+                    FABView()
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        router.navigate(to: .newTransaction)
-                    } label: {
-                        Image(systemName: Icon.plus)
-                    }
-                }
-                
-                ToolbarSpacer()
-                
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isDatePickerPresented.toggle()
@@ -210,6 +205,8 @@ struct TransactionView: View {
                 switch route {
                 case .newTransaction:
                     NewTransactionView()
+                case .camera:
+                    CameraView()
                 case .detailTransaction(let transaction):
                     DetailTransactionView(selectedTransaction: transaction)
                 }

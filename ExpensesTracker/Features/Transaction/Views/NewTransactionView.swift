@@ -9,18 +9,32 @@ import SwiftUI
 import SwiftData
 
 struct NewTransactionView: View {
+    @Environment(Router.self) private var router
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: TransactionViewModel = TransactionViewModel()
     
-    @State private var occurredAt: Date = Date()
-    @State private var amount: String = ""
-    @State private var selectedType: TransactionType = .outflow
+    @State private var occurredAt: Date
+    @State private var amount: String
+    @State private var selectedType: TransactionType
     @State private var selectedLabel: TransactionLabel?
-    @State private var transactionNote: String = ""
+    @State private var transactionNote: String
+    
+    // ── AI-suggested label title for post-load matching
+    /// Stored separately because `availableLabels` isn't populated until the view appears, so we can't resolve it during `init`.
+    @State private var suggestedLabelName: String?
     
     @State private var isShowingCreateLabelSheet = false
     
     @Query(sort: \TransactionLabel.title) private var availableLabels: [TransactionLabel]
+    
+    // MARK: - Pre-populated Initial Values based on scanned receipt's information (Optional)
+    init(prefilled: ExtractedReceiptData? = nil) {
+        _occurredAt     = State(initialValue: prefilled?.occurredAt ?? Date())
+        _amount         = State(initialValue: prefilled?.formattedAmount ?? "")
+        _selectedType   = State(initialValue: prefilled?.transactionType ?? .outflow)
+        _transactionNote = State(initialValue: prefilled?.note ?? "")
+        _suggestedLabelName = State(initialValue: prefilled?.suggestedLabelName)
+    }
     
     var body: some View {
         Form {
@@ -39,7 +53,7 @@ struct NewTransactionView: View {
                 .padding(.vertical, 4)
                 
                 Picker("Transaction Type", selection: $selectedType) {
-                    ForEach(TransactionType.allCases) { type in
+                    ForEach(TransactionType.allCases.filter { $0 != .all }) { type in
                         Text(type.label).tag(type)
                     }
                 }
@@ -69,6 +83,7 @@ struct NewTransactionView: View {
                     }
                 }
                 .pickerStyle(.navigationLink)
+                
             } header: {
                 Text("Classification")
             } footer: {
@@ -96,6 +111,17 @@ struct NewTransactionView: View {
         .navigationTitle("New Transaction")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    // Move back to TransactionView (The root)
+                    router.popToRoot()
+                } label: {
+                    Image(systemName: Icon.chevronBack)
+                }
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -125,7 +151,7 @@ struct NewTransactionView: View {
         ) { message in
             Button {
                 if message.isSuccess {
-                    dismiss()
+                    router.popToRoot()
                 }
             } label: {
                 Text("Got it!")
@@ -141,14 +167,32 @@ struct NewTransactionView: View {
             .presentationDetents([.large])
         }
         .onAppear {
-            if selectedLabel == nil {
-                selectedLabel = availableLabels.first
-            }
+            resolveLabel(from: availableLabels)
         }
         .onChange(of: availableLabels) { _, newLabels in
-            if selectedLabel == nil {
-                selectedLabel = newLabels.first
+            resolveLabel(from: newLabels)
+        }
+    }
+    
+    // MARK: - Private Helpers
+    /// Matches the AI-suggested label name against available labels.
+    /// Falls back to the first label when no match is found.
+    private func resolveLabel(from labels: [TransactionLabel]) {
+        guard selectedLabel == nil else { return }
+        
+        if let suggested = suggestedLabelName, !suggested.isEmpty {
+            // Prefer an exact case-insensitive match first,
+            // then a partial (contains) match as a fallback.
+            let exactMatch = labels.first {
+                $0.title.localizedCaseInsensitiveCompare(suggested) == .orderedSame
             }
+            let partialMatch = exactMatch ?? labels.first {
+                $0.title.localizedCaseInsensitiveContains(suggested) ||
+                suggested.localizedCaseInsensitiveContains($0.title)
+            }
+            selectedLabel = partialMatch ?? labels.first
+        } else {
+            selectedLabel = labels.first
         }
     }
 }

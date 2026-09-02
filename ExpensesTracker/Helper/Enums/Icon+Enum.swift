@@ -14,6 +14,8 @@ enum Icon {
     
     static let chevronRight = "chevron.right"
     
+    static let chevronBack = "chevron.backward"
+    
     static let closeMark = "xmark"
     
     static let question = "questionmark.circle"
@@ -33,4 +35,8 @@ enum Icon {
     static let xyAxisLineChart = "chart.xyaxis.line"
     
     static let tray = "tray"
+    
+    static let scanReceipt = "document.viewfinder"
+    
+    static let addManually = "long.text.page.and.pencil"
 }
