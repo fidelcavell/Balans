@@ -39,4 +39,14 @@ enum Icon {
     static let scanReceipt = "document.viewfinder"
     
     static let addManually = "long.text.page.and.pencil"
+    
+    static let sparkles = "sparkles"
+    
+    static let arrowClockwise = "arrow.clockwise"
+    
+    static let eye = "eye.fill"
+    
+    static let lightBulb = "lightbulb.fill"
+    
+    static let exclamationmarkTriangle = "exclamationmark.triangle.fill"
 }

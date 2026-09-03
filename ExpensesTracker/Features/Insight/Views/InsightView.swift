@@ -26,11 +26,14 @@ struct MonthlyTransaction: Identifiable {
 }
 
 struct InsightView: View {
+    @State private var viewModel = InsightViewModel()
+    
     @State private var selectedDate = Date()
     @State private var selectedSector: String? = nil
     @State private var isDatePickerPresented = false
     
     @State private var selectedChartTab: Int = 0
+    
     @Query(sort: \Transaction.occurredAt, order: .reverse) private var transactions: [Transaction]
     
     // MARK: - Computed Properties
@@ -214,6 +217,21 @@ struct InsightView: View {
                     VStack(spacing: 24) {
                         SwipeableCard
                         
+                        AIInsightCardView(
+                            report: viewModel.report,
+                            isLoading: viewModel.isLoading,
+                            isUnavailable: viewModel.isUnavailable,
+                            onRefresh: {
+                                Task {
+                                    await viewModel.generateInsight(
+                                        currentMonth: currentMonthTransaction,
+                                        yearlyTrendData: yearlyTrendData,
+                                        selectedYear: selectedYear
+                                    )
+                                }
+                            }
+                        )
+                        
                         BreakdownCategoriesCardView(
                             currentMonthLabels: currentMonthLabels,
                             totalTransactionExpenseByMonth: totalTransactionExpenseByMonth,
@@ -259,6 +277,14 @@ struct InsightView: View {
                     }
                 }
             }
+            // Reset the report whenever the user picks a different month/year
+            .onChange(of: selectedDate) {
+                viewModel.report = nil
+                viewModel.isUnavailable = false
+            }
+            .alert(item: $viewModel.message) { message in
+                Alert(title: Text(message.isSuccess ? "Success" : "Error"), message: Text(message.text))
+            }
         }
     }
     
@@ -278,7 +304,7 @@ struct InsightView: View {
                 
                 HStack(spacing: 4) {
                     Image(systemName: Icon.pieChart)
-                        .font(.system(size: 11))
+                        .font(.footnote)
                         .padding(6)
                         .background(selectedChartTab == 0 ? Color.accentColor : Color(.tertiarySystemGroupedBackground))
                         .foregroundStyle(selectedChartTab == 0 ? .white : .secondary)
@@ -288,7 +314,7 @@ struct InsightView: View {
                         }
                     
                     Image(systemName: Icon.xyAxisLineChart)
-                        .font(.system(size: 11))
+                        .font(.footnote)
                         .padding(6)
                         .background(selectedChartTab == 1 ? Color.accentColor : Color(.tertiarySystemGroupedBackground))
                         .foregroundStyle(selectedChartTab == 1 ? .white : .secondary)
