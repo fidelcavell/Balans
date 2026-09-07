@@ -42,11 +42,11 @@ class CameraManager: NSObject, ObservableObject, UIImagePickerControllerDelegate
             return
         }
         
-        // ── Step 1: OCR
-        ocrService.extractText(from: image) { [weak self] text in
+        // ── Step 1: OCR — returns the full RecognizedDocument (text + tables)
+        ocrService.extractText(from: image) { [weak self] document in
             guard let self else { return }
             
-            guard let text, !text.isEmpty else {
+            guard let document, !document.fullText.isEmpty else {
                 DispatchQueue.main.async {
                     self.errorMessage = "Failed to extract text from image"
                     self.isProcessing = false
@@ -55,7 +55,7 @@ class CameraManager: NSObject, ObservableObject, UIImagePickerControllerDelegate
             }
             
             DispatchQueue.main.async {
-                self.scannedText = text
+                self.scannedText = document.fullText
                 self.processingMessage = "Analyzing with AI…"
             }
             
@@ -65,7 +65,7 @@ class CameraManager: NSObject, ObservableObject, UIImagePickerControllerDelegate
                 
                 let labelNames = TransactionLabel.defaults.map(\.title)
                 let parsed = await ReceiptParserService.shared.parse(
-                    rawText: text,
+                    document: document,
                     availableLabelNames: labelNames
                 )
                 
