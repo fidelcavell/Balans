@@ -35,55 +35,60 @@ final class ReceiptParserService {
             return nil
         }
         
-        // ── 2. Pre-filter: extract candidate lines that look like totals
+        // ──  Pre-filter: extract candidate lines that look like totals
         let candidates = extractTotalCandidates(from: document)
         
         // ──  Build focused context for the model
         let context = buildContext(document: document)
         
-        print("\nCONTEXT:")
-        print(context)
+        print("\nBUILD CONTEXT (PASSED to MODEL) :\n\(context)")
         
         // ──  Build session with focused system instructions
         let labelsDescription = availableLabelNames.joined(separator: ", ")
         let instructions = """
-        You are a receipt parsing assistant specialising in Indonesian (Rp / IDR) \
-        and English-language receipts.
+        You are a highly accurate receipt parsing assistant specializing in Indonesian (Rp / IDR) and English-language receipts.
         
-        YOUR ONLY JOB: extract the single final amount the customer must pay.
+        YOUR ONLY JOB: Extract the core transaction data and output strictly as a JSON object. Do NOT include any conversational text outside the JSON.
         
-        ## Amount extraction priority (highest → lowest)
-        1. Grand Total / Total Keseluruhan
-        2. Total Bayar / Total Pembayaran / Jumlah Bayar
-        3. Tagihan / Amount Due / Balance Due
-        4. Total (plain label, last occurrence)
+        ## Amount Extraction Rules
+        1. Find the SINGLE final amount the customer must pay. NEVER sum numbers together.
+        2. Search priority (highest → lowest):
+           - Total / Total Belanja / Total Bayar / Total Pembayaran / Jumlah Bayar
+           - Tagihan / Amount Due / Balance Due
         
-        ## NEVER pick these lines as the amount
-        - Subtotal / Sub Total
-        - Tax / PPN / PPn / Pajak
-        - Service Charge / Biaya Layanan
-        - Discount / Diskon / Potongan
-        - Tips / Tip
-        - Any individual line-item price
+        3. NEVER pick these lines as the final amount:
+           - Subtotal / Sub Total
+           - Tax / PPN / PPn / Pajak
+           - Service Charge / Biaya Layanan
+           - Discount / Diskon / Potongan
+           - Tips / Tip
+           - Cash / Tunai / Debit / Credit Card (Amount tendered by customer)
+           - Change / Kembali / Kembalian (Change given back)
+           - Any individual line-item price
         
-        ## Number format rules
-        - Strip all currency symbols (Rp, IDR, $, €, ¥, etc.)
-        - Strip all thousands separators (periods and commas used as separators)
-        - Return a plain decimal number, e.g. 75000 not Rp 75.000
-        - If no valid amount found, return 0
+        4. Number Format Rules:
+           - Remove currency symbols (Rp, IDR, $, etc.).
+           - Handle Indonesian decimals carefully: If a number ends in ",00" or ".00", discard those zero decimals first.
+           - Remove all remaining thousands separators (both dots and commas).
+           - Return a plain numeric value (e.g., 75000, not "75.000" or 7500000). 
+           - If no valid amount is found, return 0.
         
-        ## Other fields
-        - date: yyyy-MM-dd format, null if absent
-        - note: merchant or store name, max 60 characters, null if absent
-        - transactionTypeRaw: "outflow" for purchases/expenses, "inflow" for income/refunds
-        - suggestedLabelName: must exactly match one of [\(labelsDescription)], or null
+        ## JSON Output Schema
+        Provide a single JSON object with exactly these keys:
+        {
+          "amount": (Number) The final parsed amount.
+          "date": (String or null) Format "yyyy-MM-dd". Look for dates near the top or bottom.
+          "note": (String or null) The Merchant or Store Name. Look at the very top of the receipt. Max 60 chars.
+          "transactionTypeRaw": (String) "outflow" for purchases/expenses, "inflow" for income/refunds. Default to "outflow".
+          "suggestedLabelName": (String or null) Must exactly match one of [\(labelsDescription)]. Return null if unsure.
+        }
         """
         
         let prompt = """
-        ## Candidate total lines (pre-filtered — prioritise these)
+        ## Candidate total lines (pre-filtered — prioritize these for the amount):
         \(candidates.isEmpty ? "(none detected — use full text below)" : candidates.joined(separator: "\n"))
         
-        ## Full receipt text
+        ## Full receipt text:
         \(context)
         """
         
@@ -91,9 +96,16 @@ final class ReceiptParserService {
         do {
             let session = LanguageModelSession(instructions: instructions)
             
+            // Deterministic generation: temperature 0 + greedy sampling
+            let options = GenerationOptions(
+                sampling: .greedy,
+                temperature: 0
+            )
+            
             let response = try await session.respond(
                 to: prompt,
-                generating: ExtractedReceiptData.self
+                generating: ExtractedReceiptData.self,
+                options: options
             )
             let result = response.content
             
@@ -108,6 +120,8 @@ final class ReceiptParserService {
                     suggestedLabelName: result.suggestedLabelName
                 )
             }
+            
+            print("\nMODEL RESULT :\n\(result)")
             
             return result
             
