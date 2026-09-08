@@ -24,16 +24,18 @@ struct NewTransactionView: View {
     @State private var suggestedLabelName: String?
     
     @State private var isShowingCreateLabelSheet = false
+    @State private var isShowingVoiceInput = false
     
     @Query(sort: \TransactionLabel.title) private var availableLabels: [TransactionLabel]
     
     // MARK: - Pre-populated Initial Values based on scanned receipt's information (Optional)
-    init(prefilled: ExtractedReceiptData? = nil) {
+    init(prefilled: ExtractedReceiptData? = nil, autoVoice: Bool = false) {
         _occurredAt     = State(initialValue: prefilled?.occurredAt ?? Date())
         _amount         = State(initialValue: prefilled?.formattedAmount ?? "")
         _selectedType   = State(initialValue: prefilled?.transactionType ?? .outflow)
         _transactionNote = State(initialValue: prefilled?.note ?? "")
         _suggestedLabelName = State(initialValue: prefilled?.suggestedLabelName)
+        _isShowingVoiceInput = State(initialValue: autoVoice)
     }
     
     var body: some View {
@@ -125,6 +127,14 @@ struct NewTransactionView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
+                    isShowingVoiceInput = true
+                } label: {
+                    Image(systemName: Icon.microphone)
+                }
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
                     guard let label = selectedLabel else { return }
                     
                     viewModel.saveTransaction(
@@ -164,6 +174,28 @@ struct NewTransactionView: View {
                 viewModel: $viewModel,
                 isShowingCreateLabelSheet: $isShowingCreateLabelSheet
             )
+            .presentationDetents([.large])
+        }
+        .sheet(isPresented: $isShowingVoiceInput) {
+            VoiceInputView { data in
+                // Apply parsed voice data to the form — same pattern as camera/receipt flow
+                if let formattedAmount = Optional(data.formattedAmount), !formattedAmount.isEmpty {
+                    amount = formattedAmount
+                }
+                selectedType = data.transactionType
+                if let date = data.occurredAt {
+                    occurredAt = date
+                }
+                if let note = data.note, !note.isEmpty {
+                    transactionNote = note
+                }
+                if let labelName = data.suggestedLabelName {
+                    suggestedLabelName = labelName
+                    // Force re-resolve since selectedLabel may already be set
+                    selectedLabel = nil
+                    resolveLabel(from: availableLabels)
+                }
+            }
             .presentationDetents([.large])
         }
         .onAppear {
