@@ -25,7 +25,14 @@ struct FABView: View {
                         Label("Scan Receipt", systemImage: Icon.scanReceipt)
                     }
                     
-                    // Option B: Manual Input
+                    // Option B: Voice Input
+                    Button {
+                        router.navigate(to: .voiceTranscription)
+                    } label: {
+                        Label("Voice Input", systemImage: Icon.microphone)
+                    }
+                    
+                    // Option C: Manual Input
                     Button {
                         router.navigate(to: .newTransaction)
                     } label: {

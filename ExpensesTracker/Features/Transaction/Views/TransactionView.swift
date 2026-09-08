@@ -205,6 +205,8 @@ struct TransactionView: View {
                 switch route {
                 case .newTransaction:
                     NewTransactionView()
+                case .voiceTranscription:
+                    NewTransactionView(autoVoice: true)
                 case .camera:
                     CameraView()
                 case .detailTransaction(let transaction):

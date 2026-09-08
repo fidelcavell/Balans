@@ -62,6 +62,13 @@
 			);
 			target = 5FEA10A82FCBE5C10085DE9F /* ExpensesTracker */;
 		};
+		5FC21A86304FE9EE0094EC66 /* Exceptions for "ExpensesTracker" folder in "ExpensesTracker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5FEA10A82FCBE5C10085DE9F /* ExpensesTracker */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -76,6 +83,9 @@
 		};
 		5FEA10AB2FCBE5C10085DE9F /* ExpensesTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5FC21A86304FE9EE0094EC66 /* Exceptions for "ExpensesTracker" folder in "ExpensesTracker" target */,
+			);
 			path = ExpensesTracker;
 			sourceTree = "<group>";
 		};
@@ -460,8 +470,10 @@
 				DEVELOPMENT_TEAM = 96SXDK9ZFJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExpensesTracker/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Balans;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to scan receipts.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to your mic to identify your transaction";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -495,8 +507,10 @@
 				DEVELOPMENT_TEAM = 96SXDK9ZFJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExpensesTracker/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Balans;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to scan receipts.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to your mic to identify your transaction";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

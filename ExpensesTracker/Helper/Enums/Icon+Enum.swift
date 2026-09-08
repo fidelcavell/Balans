@@ -49,4 +49,10 @@ enum Icon {
     static let lightBulb = "lightbulb.fill"
     
     static let exclamationmarkTriangle = "exclamationmark.triangle.fill"
+    
+    static let microphone = "mic.fill"
+    
+    static let microphoneSlash = "mic.slash.fill"
+    
+    static let waveform = "waveform"
 }
