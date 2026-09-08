@@ -11,10 +11,6 @@ import Observation
 
 /// Handles live microphone → text transcription using Apple's Speech framework.
 ///
-/// Integrates with `LanguageDetectionService` to **auto-detect** the spoken
-/// language from the first few words and seamlessly restart recognition with
-/// the correct locale if needed — improving accuracy for bilingual users.
-///
 /// Usage:
 /// ```swift
 /// let service = SpeechRecognitionService.shared
@@ -43,9 +39,6 @@ final class SpeechRecognitionService {
     var detectedLanguage: String = "id-ID"
     
     // MARK: - Private Properties
-    
-    private let languageDetector = LanguageDetectionService.shared
-    
     /// Default locale — Indonesian (matches the app's Rupiah context).
     private let defaultLocale = "id-ID"
     
@@ -177,9 +170,6 @@ final class SpeechRecognitionService {
                     } else {
                         self.transcript = self.previousTranscript + " " + newText
                     }
-                    
-                    // ── Auto-detect language from partial results
-                    self.detectAndSwitchIfNeeded(transcript: self.transcript)
                 }
                 
                 if let error {
@@ -235,43 +225,5 @@ final class SpeechRecognitionService {
         } catch {
             errorMessage = "Failed to start audio engine: \(error.localizedDescription)"
         }
-    }
-    
-    // MARK: - Language Auto-Detection -> Clear to delete this code
-    /// Analyzes partial transcript and restarts recognition with the correct
-    /// locale if a language mismatch is detected.
-    ///
-    /// Only triggers once per session (after ≥3 words) to avoid disruption.
-    private func detectAndSwitchIfNeeded(transcript: String) {
-        // Only attempt once per session
-        guard !hasAttemptedLanguageSwitch else { return }
-        
-        // Need enough words for reliable detection
-        let wordCount = transcript.split(separator: " ").count
-        guard wordCount >= minWordsForDetection else { return }
-        
-        // Detect with a confidence threshold
-        guard let detected = languageDetector.detect(
-            from: transcript,
-            minimumConfidence: 0.6
-        ) else { return }
-        
-        // Mark that we've checked (regardless of whether we switch)
-        hasAttemptedLanguageSwitch = true
-        
-        let detectedLocale = detected.rawValue
-        
-        // If already using the correct locale, no action needed
-        guard detectedLocale != detectedLanguage else { return }
-        
-        print("[SpeechRecognitionService] Language switch: \(detectedLanguage) → \(detectedLocale)")
-        
-        // Save the current transcript so it doesn't disappear from the UI
-        self.previousTranscript = self.transcript
-        
-        // Seamlessly restart with detected locale (engine stays running)
-        startRecognition(locale: detectedLocale)
-        
-        print("[SpeechRecognitionService] Seamlessly restarted with locale \(detectedLocale)")
     }
 }
