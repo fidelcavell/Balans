@@ -179,7 +179,7 @@ final class SpeechRecognitionService {
                     }
                     
                     // ── Auto-detect language from partial results
-                    //self.detectAndSwitchIfNeeded(transcript: self.transcript)
+                    self.detectAndSwitchIfNeeded(transcript: self.transcript)
                 }
                 
                 if let error {
