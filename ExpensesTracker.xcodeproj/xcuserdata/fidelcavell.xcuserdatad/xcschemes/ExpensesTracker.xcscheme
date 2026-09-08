@@ -48,13 +48,6 @@
             ReferencedContainer = "container:ExpensesTracker.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "GEMINI_API_KEY"
-            value = "AQ.Ab8RN6JEWA_FW2zq-lp5bnDNOIdcUhyF3bsUkSwa1lxSQ11gwg"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
