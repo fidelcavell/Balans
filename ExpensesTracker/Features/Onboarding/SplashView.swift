@@ -49,6 +49,14 @@ struct SplashView: View {
                 hasViewLoaded = true
             }
         }
+        .task {
+            // Eagerly preload FastVLM so it's ready when the camera is used
+            do {
+                try await FastVLMManager.shared.loadModel()
+            } catch {
+                print("[FastVLM] Preload failed: \(error.localizedDescription)")
+            }
+        }
     }
 }
 

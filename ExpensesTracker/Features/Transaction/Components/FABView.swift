@@ -25,6 +25,13 @@ struct FABView: View {
                         Label("Scan Receipt", systemImage: Icon.scanReceipt)
                     }
                     
+                    // Option A2: Scan Receipt with FastVLM
+                    Button {
+                        router.navigate(to: .cameraFastVLM)
+                    } label: {
+                        Label("Scan Receipt (FastVLM)", systemImage: "cpu")
+                    }
+                    
                     // Option B: Voice Input
                     Button {
                         router.navigate(to: .voiceTranscription)
