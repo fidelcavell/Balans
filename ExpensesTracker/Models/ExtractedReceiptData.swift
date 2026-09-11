@@ -30,6 +30,13 @@ struct ExtractedReceiptData {
 
 // MARK: - Internal Helpers
 extension ExtractedReceiptData {
+    init(amount: Double) {
+        self.amount = amount
+        self.dateString = nil
+        self.note = nil
+        self.transactionTypeRaw = "outflow"
+        self.suggestedLabelName = nil
+    }
     
     /// Converts the raw string into the app's `TransactionType` enum.
     var transactionType: TransactionType {
