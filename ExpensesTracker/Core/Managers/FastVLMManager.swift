@@ -112,8 +112,29 @@ public class FastVLMManager {
             name: "Strict JSON",
             prompt: "What is the final total amount to pay on this receipt? Do not sum numbers.",
             promptSuffix: "Output only a single JSON object: {\"amount\": <number>}"
+        ),
+        PromptPreset(
+            id: "friend-split",
+            name: "Friends Split & Adjust",
+            prompt: "Identify the items, quantities, and prices on this receipt and adjust them according to friend split instructions.",
+            promptSuffix: "Output strictly JSON: {\"items\": [{\"name\": \"...\", \"quantity\": 1, \"price\": 0}], \"subtotal\": 0, \"tax\": 0, \"serviceCharge\": 0, \"discount\": 0, \"total\": 0, \"note\": \"...\"}"
         )
     ]
+
+    /// Builds a prompt tailored for adjusting items bought together with friends using a voice transcription.
+    public static func buildSplitPrompt(voiceInstruction: String) -> (prompt: String, promptSuffix: String) {
+        let trimmed = voiceInstruction.trimmingCharacters(in: .whitespacesAndNewlines)
+        let promptText: String
+        if trimmed.isEmpty {
+            promptText = "Identify and list all items with their quantities and prices from this receipt."
+        } else {
+            promptText = "From this receipt, adjust items, quantities, and prices according to the user instructions: \"\(trimmed)\"."
+        }
+
+        let suffixText = "Output strictly valid JSON: {\"items\": [{\"name\": \"item name\", \"quantity\": 1, \"price\": 10000}], \"subtotal\": 10000, \"tax\": 0, \"serviceCharge\": 0, \"discount\": 0, \"total\": 10000, \"note\": \"short summary\"}"
+
+        return (promptText, suffixText)
+    }
 
     public static var defaultPrompt: String {
         defaultPresets[0].prompt
@@ -471,5 +492,140 @@ public class FastVLMManager {
         }
 
         return Double(str)
+    }
+
+    // MARK: - Receipt Detail & Items Extraction for Friends Split
+
+    /// Extracts itemized breakdown from FastVLM output.
+    /// Parses JSON objects with `items` array, or falls back to line-item heuristics.
+    public func extractReceiptDetail(from input: String? = nil) -> ExtractedReceiptDetail? {
+        let text = (input ?? generatedText).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return nil }
+
+        // 1. Try decoding JSON directly from text or extracted JSON block
+        if let jsonString = extractJSONSubstring(from: text),
+           let data = jsonString.data(using: .utf8) {
+            // Direct Decodable parse
+            if let detail = try? JSONDecoder().decode(ExtractedReceiptDetail.self, from: data), !detail.items.isEmpty {
+                return detail
+            }
+
+            // Dict parse with flexible keys
+            if let dict = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+                if let detail = parseReceiptDetailFromDict(dict) {
+                    return detail
+                }
+            }
+        }
+
+        // 2. Line-item regex heuristic extraction if FastVLM outputted bullet points or a list
+        let fallbackItems = parseLineItemsFromText(text)
+        if !fallbackItems.isEmpty {
+            let total = extractAmount(from: text) ?? fallbackItems.reduce(0) { $0 + $1.totalPrice }
+            return ExtractedReceiptDetail(
+                items: fallbackItems,
+                subtotal: fallbackItems.reduce(0) { $0 + $1.totalPrice },
+                tax: 0,
+                serviceCharge: 0,
+                discount: 0,
+                grandTotal: total
+            )
+        }
+
+        return nil
+    }
+
+    private func extractJSONSubstring(from text: String) -> String? {
+        if let start = text.firstIndex(of: "{"), let end = text.lastIndex(of: "}"), start <= end {
+            return String(text[start...end])
+        }
+        return nil
+    }
+
+    private func parseReceiptDetailFromDict(_ dict: [String: Any]) -> ExtractedReceiptDetail? {
+        guard let itemsRaw = dict["items"] as? [[String: Any]], !itemsRaw.isEmpty else {
+            return nil
+        }
+
+        let items: [ExtractedReceiptItem] = itemsRaw.compactMap { itemDict in
+            guard let name = itemDict["name"] as? String, !name.isEmpty else { return nil }
+            let price: Double
+            if let p = itemDict["price"] as? Double { price = p }
+            else if let p = itemDict["price"] as? Int { price = Double(p) }
+            else if let s = itemDict["price"] as? String, let p = sanitizeNumericString(s) { price = p }
+            else { price = 0 }
+
+            let qty: Int
+            if let q = itemDict["quantity"] as? Int { qty = q }
+            else if let q = itemDict["quantity"] as? Double { qty = Int(q) }
+            else if let s = itemDict["quantity"] as? String, let q = Int(s) { qty = q }
+            else { qty = 1 }
+
+            return ExtractedReceiptItem(name: name, price: price, quantity: qty)
+        }
+
+        guard !items.isEmpty else { return nil }
+
+        let subtotal = (dict["subtotal"] as? Double) ?? (dict["subtotal"] as? Int).map(Double.init) ?? items.reduce(0) { $0 + $1.totalPrice }
+        let tax = (dict["tax"] as? Double) ?? (dict["tax"] as? Int).map(Double.init) ?? 0
+        let service = (dict["serviceCharge"] as? Double) ?? (dict["service_charge"] as? Double) ?? 0
+        let discount = (dict["discount"] as? Double) ?? (dict["discount"] as? Int).map(Double.init) ?? 0
+        let grandTotal = (dict["total"] as? Double)
+            ?? (dict["grandTotal"] as? Double)
+            ?? (dict["amount"] as? Double)
+            ?? (subtotal + tax + service - discount)
+
+        return ExtractedReceiptDetail(
+            items: items,
+            subtotal: subtotal,
+            tax: tax,
+            serviceCharge: service,
+            discount: discount,
+            grandTotal: grandTotal
+        )
+    }
+
+    private func parseLineItemsFromText(_ text: String) -> [ExtractedReceiptItem] {
+        var items: [ExtractedReceiptItem] = []
+        let lines = text.components(separatedBy: .newlines)
+        let itemPattern = #"(?:^|\s*[-*•]|\d+\.)\s*(?:(\d+)\s*[xX]\s+)?([A-Za-z0-9\s]+?)[\s:=-]+(?:Rp\.?|IDR|\$)?\s*([0-9.,]+)"#
+
+        guard let regex = try? NSRegularExpression(pattern: itemPattern, options: .caseInsensitive) else {
+            return []
+        }
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+            let nsLine = trimmed as NSString
+            if let match = regex.firstMatch(in: trimmed, options: [], range: NSRange(location: 0, length: nsLine.length)) {
+                var qty = 1
+                if match.numberOfRanges > 1 && match.range(at: 1).location != NSNotFound {
+                    let qtyStr = nsLine.substring(with: match.range(at: 1))
+                    qty = Int(qtyStr) ?? 1
+                }
+
+                var name = ""
+                if match.numberOfRanges > 2 && match.range(at: 2).location != NSNotFound {
+                    name = nsLine.substring(with: match.range(at: 2)).trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+
+                var price: Double = 0
+                if match.numberOfRanges > 3 && match.range(at: 3).location != NSNotFound {
+                    let priceStr = nsLine.substring(with: match.range(at: 3))
+                    price = sanitizeNumericString(priceStr) ?? 0
+                }
+
+                let lowerName = name.lowercased()
+                if lowerName.contains("total") || lowerName.contains("subtotal") || lowerName.contains("tax") || lowerName.contains("pajak") || lowerName.contains("cash") || lowerName.contains("change") || lowerName.contains("kembali") {
+                    continue
+                }
+
+                if !name.isEmpty && price > 0 {
+                    items.append(ExtractedReceiptItem(name: name, price: price, quantity: qty))
+                }
+            }
+        }
+        return items
     }
 }

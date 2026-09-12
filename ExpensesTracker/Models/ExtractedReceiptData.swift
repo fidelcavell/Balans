@@ -37,6 +37,14 @@ extension ExtractedReceiptData {
         self.transactionTypeRaw = "outflow"
         self.suggestedLabelName = nil
     }
+
+    init(amount: Double, note: String?) {
+        self.amount = amount
+        self.dateString = nil
+        self.note = note
+        self.transactionTypeRaw = "outflow"
+        self.suggestedLabelName = nil
+    }
     
     /// Converts the raw string into the app's `TransactionType` enum.
     var transactionType: TransactionType {
