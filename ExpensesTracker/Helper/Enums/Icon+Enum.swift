@@ -55,4 +55,6 @@ enum Icon {
     static let microphoneSlash = "mic.slash.fill"
     
     static let waveform = "waveform"
+    
+    static let camera = "camera"
 }

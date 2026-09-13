@@ -7,6 +7,11 @@ import MLXVLM
 import SwiftUI
 import Tokenizers
 
+struct DefaultPromptConfig {
+    var prompt: String = "What number is written next to Total or Grand Total on this receipt?"
+    var promptSuffix: String = "Output only the single number without calculation."
+}
+
 private struct FastVLMTokenizerLoader: TokenizerLoader {
     func load(from directory: URL) async throws -> any MLXLMCommon.Tokenizer {
         let upstream = try await Tokenizers.AutoTokenizer.from(modelFolder: directory)
@@ -79,48 +84,6 @@ public class FastVLMManager {
 
     public var modelContainer: ModelContainer?
 
-    public struct PromptPreset: Identifiable, Hashable, Sendable {
-        public let id: String
-        public let name: String
-        public let prompt: String
-        public let promptSuffix: String
-
-        public init(id: String = UUID().uuidString, name: String, prompt: String, promptSuffix: String) {
-            self.id = id
-            self.name = name
-            self.prompt = prompt
-            self.promptSuffix = promptSuffix
-        }
-    }
-
-    /// Prompt presets matching official FastVLM demo app style (Question + Suffix constraint)
-    public static let defaultPresets: [PromptPreset] = [
-        PromptPreset(
-            id: "final-total",
-            name: "Receipt Final Total",
-            prompt: "What is the final total amount to pay printed on this receipt?",
-            promptSuffix: "Do not calculate, add, or sum numbers. Output only the single printed final payment amount number."
-        ),
-        PromptPreset(
-            id: "read-label",
-            name: "Read Printed Total",
-            prompt: "What number is written next to Total or Grand Total on this receipt?",
-            promptSuffix: "Output only the single number without calculation."
-        ),
-        PromptPreset(
-            id: "strict-json",
-            name: "Strict JSON",
-            prompt: "What is the final total amount to pay on this receipt? Do not sum numbers.",
-            promptSuffix: "Output only a single JSON object: {\"amount\": <number>}"
-        ),
-        PromptPreset(
-            id: "friend-split",
-            name: "Friends Split & Adjust",
-            prompt: "Identify the items, quantities, and prices on this receipt and adjust them according to friend split instructions.",
-            promptSuffix: "Output strictly JSON: {\"items\": [{\"name\": \"...\", \"quantity\": 1, \"price\": 0}], \"subtotal\": 0, \"tax\": 0, \"serviceCharge\": 0, \"discount\": 0, \"total\": 0, \"note\": \"...\"}"
-        )
-    ]
-
     /// Builds a prompt tailored for adjusting items bought together with friends using a voice transcription.
     public static func buildSplitPrompt(voiceInstruction: String) -> (prompt: String, promptSuffix: String) {
         let trimmed = voiceInstruction.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -134,19 +97,6 @@ public class FastVLMManager {
         let suffixText = "Output strictly valid JSON: {\"items\": [{\"name\": \"item name\", \"quantity\": 1, \"price\": 10000}], \"subtotal\": 10000, \"tax\": 0, \"serviceCharge\": 0, \"discount\": 0, \"total\": 10000, \"note\": \"short summary\"}"
 
         return (promptText, suffixText)
-    }
-
-    public static var defaultPrompt: String {
-        defaultPresets[0].prompt
-    }
-
-    public static var defaultPromptSuffix: String {
-        defaultPresets[0].promptSuffix
-    }
-
-    /// Combined strict default receipt prompt for compatibility
-    public static var strictReceiptAmountPrompt: String {
-        "\(defaultPrompt) \(defaultPromptSuffix)"
     }
 
     /// Generation parameters matching official demo

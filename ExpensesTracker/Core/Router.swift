@@ -13,7 +13,6 @@ import Observation
 enum AppRoute: Hashable {
     case newTransaction
     case voiceTranscription
-    case camera
     case cameraFastVLM
     case detailTransaction(Transaction)
 }

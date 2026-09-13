@@ -18,28 +18,18 @@ struct FABView: View {
                 Spacer()
                 
                 Menu {
-                    // Option A: Scan Receipt
                     Button {
-                        router.navigate(to: .camera)
+                        router.navigate(to: .cameraFastVLM)
                     } label: {
                         Label("Scan Receipt", systemImage: Icon.scanReceipt)
                     }
                     
-                    // Option A2: Scan Receipt with FastVLM
-                    Button {
-                        router.navigate(to: .cameraFastVLM)
-                    } label: {
-                        Label("Scan Receipt (FastVLM)", systemImage: "cpu")
-                    }
-                    
-                    // Option B: Voice Input
                     Button {
                         router.navigate(to: .voiceTranscription)
                     } label: {
                         Label("Voice Input", systemImage: Icon.microphone)
                     }
                     
-                    // Option C: Manual Input
                     Button {
                         router.navigate(to: .newTransaction)
                     } label: {
@@ -57,7 +47,6 @@ struct FABView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 .padding(.trailing, 18)
                 .padding(.bottom, 24)
-                
             }
         }
     }

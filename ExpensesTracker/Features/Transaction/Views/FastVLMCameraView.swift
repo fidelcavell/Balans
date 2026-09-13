@@ -11,39 +11,37 @@ struct FastVLMCameraView: View {
     @State private var vlmManager = FastVLMManager.shared
     @State private var speechService = SpeechRecognitionService.shared
     @Environment(\.dismiss) var dismiss
-
+    
     // Camera state
     @State private var showImagePicker = true
     @State private var capturedImage: UIImage?
-
-    // Prompt configuration (matching official FastVLM demo app)
-    @State private var prompt: String = FastVLMManager.defaultPrompt
-    @State private var promptSuffix: String = FastVLMManager.defaultPromptSuffix
-    @State private var selectedPresetId: String = "final-total"
-    @State private var isCustomizingPrompt = false
-
+    
     // Voice record state for friends adjustment
     @State private var voicePromptText: String = ""
     @State private var isEditingVoicePrompt = false
     @State private var micAnimationPhase: CGFloat = 0.0
-
+    
     // Extracted detail & Split navigation
     @State private var extractedDetail: ExtractedReceiptDetail?
     @State private var isShowingItemSelection = false
     @State private var confirmedShareAmount: Double?
     @State private var confirmedShareNote: String?
-
+    
     // Processing & Navigation
     @State private var errorMessage: String?
     @State private var navigateToReview = false
-
+    
+    // Default prompt configurations
+    @State private var prompt: String = DefaultPromptConfig().prompt
+    @State private var promptSuffix: String = DefaultPromptConfig().promptSuffix
+    
     private var fullPrompt: String {
         let p = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         let s = promptSuffix.trimmingCharacters(in: .whitespacesAndNewlines)
         if s.isEmpty { return p }
         return "\(p) \(s)"
     }
-
+    
     private var statusBackgroundColor: Color {
         switch vlmManager.evaluationState {
         case .idle:
@@ -54,11 +52,11 @@ struct FastVLMCameraView: View {
             return .green
         }
     }
-
+    
     private var statusTextColor: Color {
         vlmManager.evaluationState == .processingPrompt ? .black : .white
     }
-
+    
     var body: some View {
         Group {
             if showImagePicker && capturedImage == nil {
@@ -69,23 +67,19 @@ struct FastVLMCameraView: View {
                 } onCancel: {
                     showImagePicker = false
                 }
-
+                .edgesIgnoringSafeArea(.all)
+                
             } else if let errorMessage {
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 44))
                         .foregroundStyle(.orange)
-
+                    
                     Text(errorMessage)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)
-
+                    
                     HStack(spacing: 12) {
-                        Button("Change Prompt") {
-                            isCustomizingPrompt = true
-                        }
-                        .buttonStyle(.bordered)
-
                         Button("Try Again") {
                             if let img = capturedImage {
                                 processWithFastVLM(image: img)
@@ -97,39 +91,22 @@ struct FastVLMCameraView: View {
                     }
                 }
                 .padding()
-
+                
             } else if capturedImage != nil {
-                // Main content: image preview, voice adjustment card, and results
                 ScrollView {
                     VStack(spacing: 16) {
-                        // 1. Scanned Receipt Image Preview with TTFT
                         imagePreviewWithTTFT
-
-                        // 2. Voice Record & Adjustment Prompt Card (beside/below the scanned receipt)
-                        voiceAdjustmentCard
-
-                        // 3. Status Badge & Generation Progress
+                        
                         statusBadge
-
+                        
+                        //voiceAdjustmentCard
+                        
                         if vlmManager.isGenerating {
                             VStack(spacing: 12) {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle())
                                     .scaleEffect(1.1)
-
-                                if !vlmManager.generatedText.isEmpty {
-                                    GroupBox {
-                                        Text(vlmManager.generatedText)
-                                            .font(.system(.caption, design: .monospaced))
-                                            .foregroundStyle(.primary)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                    } label: {
-                                        Text("Live Output")
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-
+                                
                                 Button("Cancel") {
                                     vlmManager.cancel()
                                 }
@@ -137,9 +114,8 @@ struct FastVLMCameraView: View {
                                 .tint(.secondary)
                             }
                             .padding(.vertical, 8)
-
+                            
                         } else if !vlmManager.generatedText.isEmpty {
-                            // 4. Results: Adjusted Items or Single Amount
                             if let detail = extractedDetail, !detail.items.isEmpty {
                                 adjustedItemsCard(detail)
                             } else if let amount = vlmManager.extractAmount() {
@@ -147,98 +123,50 @@ struct FastVLMCameraView: View {
                             } else {
                                 noAmountDetectedCard
                             }
-
-                            // 5. Active Prompt Summary Card
-                            promptSummaryCard
-
-                            // 6. Raw Model Output Box
-                            GroupBox {
-                                Text(vlmManager.generatedText)
-                                    .font(.system(.subheadline, design: .monospaced))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .textSelection(.enabled)
-                            } label: {
-                                Label("Raw Model Output", systemImage: "text.bubble")
-                                    .font(.headline)
+                            
+                            Button { reset() } label: {
+                                Label("Retake", systemImage: Icon.camera)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 16)
                             }
-
-                            // 7. Action Buttons
-                            HStack(spacing: 12) {
-                                Button {
-                                    UIPasteboard.general.string = vlmManager.generatedText
-                                } label: {
-                                    Label("Copy", systemImage: "doc.on.doc")
-                                }
-                                .buttonStyle(.bordered)
-
-                                if let capturedImage {
-                                    Button {
-                                        processWithFastVLM(image: capturedImage)
-                                    } label: {
-                                        Label("Re-scan", systemImage: "arrow.clockwise")
-                                    }
-                                    .buttonStyle(.bordered)
-                                }
-
-                                Button { reset() } label: {
-                                    Label("Scan Another", systemImage: "camera")
-                                }
-                                .buttonStyle(.borderedProminent)
-                            }
+                            .buttonStyle(.borderedProminent)
+                            .padding(.top, 24)
                         }
                     }
                     .padding()
                 }
-
+                
             } else if !showImagePicker && capturedImage == nil {
-                // User cancelled the picker
-                VStack(spacing: 12) {
+                VStack(spacing: 16) {
                     Text("No image captured")
                         .foregroundStyle(.secondary)
-                    Button("Open Camera") { reset() }
-                        .buttonStyle(.borderedProminent)
+                    
+                    Button {
+                        reset()
+                    } label: {
+                        Label("Open camera", systemImage: Icon.camera)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
             } else {
                 ProgressView()
             }
         }
-        .navigationTitle("FastVLM Scan")
+        .navigationTitle("Scan Receipt")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                // Prompts menu
-                Menu {
-                    ForEach(FastVLMManager.defaultPresets) { preset in
-                        Button {
-                            applyPreset(preset)
-                        } label: {
-                            if selectedPresetId == preset.id {
-                                Label(preset.name, systemImage: "checkmark")
-                            } else {
-                                Text(preset.name)
-                            }
-                        }
-                    }
-
-                    Divider()
-
-                    Button {
-                        isCustomizingPrompt = true
-                    } label: {
-                        Label("Customize Prompt...", systemImage: "slider.horizontal.3")
-                    }
-                } label: {
-                    Text("Prompts")
-                }
-
                 if !showImagePicker && !vlmManager.isGenerating {
-                    Button("Retake") { reset() }
+                    Button {
+                        // TODO: Trigger to show a sheet
+                    } label: {
+                        Text("Voice Prompt")
+                    }
                 }
             }
-        }
-        .sheet(isPresented: $isCustomizingPrompt) {
-            promptCustomizeSheet
         }
         .sheet(isPresented: $isShowingItemSelection) {
             if let detail = extractedDetail {
@@ -250,24 +178,23 @@ struct FastVLMCameraView: View {
             }
         }
         .navigationDestination(isPresented: $navigateToReview) {
-            let finalAmt = confirmedShareAmount
-                ?? extractedDetail?.grandTotal
-                ?? vlmManager.extractAmount()
-                ?? 0
+            let finalAmount = confirmedShareAmount
+            ?? extractedDetail?.grandTotal
+            ?? vlmManager.extractAmount()
+            ?? 0
             let finalNote = confirmedShareNote
-                ?? extractedDetail?.summaryNote(for: Set(extractedDetail?.items.map(\.id) ?? []))
-                ?? (!voicePromptText.isEmpty ? "Split: \(voicePromptText)" : nil)
-
-            NewTransactionView(prefilled: ExtractedReceiptData(amount: finalAmt, note: finalNote))
+            ?? extractedDetail?.summaryNote(for: Set(extractedDetail?.items.map(\.id) ?? []))
+            ?? (!voicePromptText.isEmpty ? "Split: \(voicePromptText)" : nil)
+            
+            NewTransactionView(prefilled: ExtractedReceiptData(amount: finalAmount, note: finalNote))
         }
         .onDisappear {
             vlmManager.cancel()
             speechService.stopListening()
         }
     }
-
+    
     // MARK: - Subviews
-
     @ViewBuilder
     private var imagePreviewWithTTFT: some View {
         if let capturedImage {
@@ -294,8 +221,8 @@ struct FastVLMCameraView: View {
                 }
         }
     }
-
-    /// Dedicated Voice Prompt Card placed beside / below the scanned receipt
+    
+    // MARK: - Voice Prompt Card
     private var voiceAdjustmentCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -303,9 +230,9 @@ struct FastVLMCameraView: View {
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(.tint)
-
+                
                 Spacer()
-
+                
                 if !voicePromptText.isEmpty {
                     Button("Clear") {
                         clearVoicePrompt()
@@ -314,11 +241,11 @@ struct FastVLMCameraView: View {
                     .foregroundStyle(.secondary)
                 }
             }
-
+            
             Text("Speak instructions to adjust the number or price of items you bought with friends.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-
+            
             // Live Microphone Record Controls
             HStack(spacing: 12) {
                 Button {
@@ -335,11 +262,11 @@ struct FastVLMCameraView: View {
                                     value: micAnimationPhase
                                 )
                         }
-
+                        
                         Circle()
                             .fill(speechService.isListening ? Color.red : Color.accentColor)
                             .frame(width: 38, height: 38)
-
+                        
                         Image(systemName: speechService.isListening ? "stop.fill" : "mic.fill")
                             .font(.system(size: 18))
                             .foregroundStyle(.white)
@@ -347,13 +274,13 @@ struct FastVLMCameraView: View {
                 }
                 .buttonStyle(.plain)
                 .onAppear { micAnimationPhase = 1.0 }
-
+                
                 VStack(alignment: .leading, spacing: 2) {
                     Text(speechService.isListening ? "Listening..." : (voicePromptText.isEmpty ? "Tap to record prompt" : "Recorded Prompt"))
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundStyle(speechService.isListening ? .red : .primary)
-
+                    
                     if speechService.isListening {
                         Text(speechService.transcript.isEmpty ? "Say e.g.: \"I bought 2 teas and 1 burger\"" : speechService.transcript)
                             .font(.caption2)
@@ -372,9 +299,9 @@ struct FastVLMCameraView: View {
                             .lineLimit(1)
                     }
                 }
-
+                
                 Spacer()
-
+                
                 if !voicePromptText.isEmpty && !speechService.isListening {
                     Button {
                         if let img = capturedImage {
@@ -395,8 +322,8 @@ struct FastVLMCameraView: View {
         .background(Color(.tertiarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
-
-    /// Card displaying adjusted items extracted from the receipt based on voice prompt
+    
+    // MARK: - Card displaying adjusted items extracted from the receipt based on voice prompt
     @ViewBuilder
     private func adjustedItemsCard(_ detail: ExtractedReceiptDetail) -> some View {
         VStack(spacing: 12) {
@@ -411,7 +338,7 @@ struct FastVLMCameraView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-
+                
                 Button {
                     isShowingItemSelection = true
                 } label: {
@@ -422,9 +349,9 @@ struct FastVLMCameraView: View {
                 .buttonStyle(.bordered)
                 .buttonBorderShape(.capsule)
             }
-
+            
             Divider()
-
+            
             // Item list rows
             VStack(spacing: 8) {
                 ForEach(detail.items) { item in
@@ -433,23 +360,23 @@ struct FastVLMCameraView: View {
                             Text(item.name)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
-
+                            
                             if item.quantity > 1 {
                                 Text("\(item.quantity) × \(item.price, format: .currency(code: "IDR"))")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
                         }
-
+                        
                         Spacer()
-
+                        
                         Text(item.totalPrice, format: .currency(code: "IDR"))
                             .font(.subheadline)
                             .fontWeight(.semibold)
                     }
                 }
             }
-
+            
             // Subtotal / Extra Breakdown
             if detail.tax > 0 || detail.serviceCharge > 0 || detail.discount > 0 {
                 Divider()
@@ -492,9 +419,9 @@ struct FastVLMCameraView: View {
                     }
                 }
             }
-
+            
             Divider()
-
+            
             // Final Share Amount
             HStack(alignment: .lastTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -506,14 +433,14 @@ struct FastVLMCameraView: View {
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
-
+                
                 Spacer()
-
+                
                 Text(detail.grandTotal, format: .currency(code: "IDR"))
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(.primary)
             }
-
+            
             // Primary Action
             Button {
                 confirmedShareAmount = detail.grandTotal
@@ -533,7 +460,7 @@ struct FastVLMCameraView: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
-
+    
     /// Single amount card fallback
     @ViewBuilder
     private func singleAmountCard(_ amount: Double) -> some View {
@@ -542,11 +469,11 @@ struct FastVLMCameraView: View {
                 .font(.caption)
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)
-
+            
             Text(amount, format: .currency(code: "IDR"))
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
-
+            
             Button {
                 navigateToReview = true
             } label: {
@@ -563,14 +490,15 @@ struct FastVLMCameraView: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
-
+    
+    /// No amount detected card
     private var noAmountDetectedCard: some View {
         VStack(spacing: 6) {
             Text("No single amount detected")
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)
-            Text("Try recording a voice prompt or selecting another preset.")
+            Text("Try retake the receipt and make sure placed it is not blurred.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
@@ -579,7 +507,8 @@ struct FastVLMCameraView: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
-
+    
+    /// Model processing status badge
     private var statusBadge: some View {
         HStack(spacing: 6) {
             Circle()
@@ -595,94 +524,8 @@ struct FastVLMCameraView: View {
         .background(statusBackgroundColor.opacity(0.12))
         .clipShape(Capsule())
     }
-
-    private var promptSummaryCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Label("Active Prompt", systemImage: "sparkles")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                Button("Edit") {
-                    isCustomizingPrompt = true
-                }
-                .font(.caption)
-            }
-
-            Text(prompt)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
-
-            if !promptSuffix.isEmpty {
-                Text(promptSuffix)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Color(.tertiarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-
-    private var promptCustomizeSheet: some View {
-        NavigationStack {
-            Form {
-                Section("Presets") {
-                    ForEach(FastVLMManager.defaultPresets) { preset in
-                        Button {
-                            applyPreset(preset)
-                        } label: {
-                            HStack {
-                                Text(preset.name)
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                if selectedPresetId == preset.id {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(.tint)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Section("Prompt (Task / Question)") {
-                    TextEditor(text: $prompt)
-                        .frame(minHeight: 60)
-                }
-
-                Section("Prompt Suffix (Output Constraint)") {
-                    TextEditor(text: $promptSuffix)
-                        .frame(minHeight: 60)
-                }
-            }
-            .navigationTitle("Customize Prompt")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        isCustomizingPrompt = false
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        isCustomizingPrompt = false
-                        if let img = capturedImage {
-                            processWithFastVLM(image: img)
-                        }
-                    }
-                    .fontWeight(.semibold)
-                }
-            }
-        }
-        .presentationDetents([.medium, .large])
-    }
-
+    
     // MARK: - Private Methods
-
     private func toggleVoiceRecording() {
         if speechService.isListening {
             speechService.stopListening()
@@ -695,42 +538,40 @@ struct FastVLMCameraView: View {
             speechService.startListening()
         }
     }
-
+    
     private func applyVoicePrompt(_ text: String) {
         voicePromptText = text
         let (p, s) = FastVLMManager.buildSplitPrompt(voiceInstruction: text)
         prompt = p
         promptSuffix = s
-        selectedPresetId = "friend-split"
-
+        
         if let img = capturedImage, !vlmManager.isGenerating {
             processWithFastVLM(image: img)
         }
     }
-
+    
     private func clearVoicePrompt() {
         voicePromptText = ""
         speechService.reset()
         extractedDetail = nil
-        applyPreset(FastVLMManager.defaultPresets[0])
+        applyPreset(DefaultPromptConfig())
     }
-
-    private func applyPreset(_ preset: FastVLMManager.PromptPreset) {
+    
+    private func applyPreset(_ preset: DefaultPromptConfig) {
         prompt = preset.prompt
         promptSuffix = preset.promptSuffix
-        selectedPresetId = preset.id
-
+        
         if let capturedImage, !vlmManager.isGenerating {
             processWithFastVLM(image: capturedImage)
         }
     }
-
+    
     private func processWithFastVLM(image: UIImage) {
         guard vlmManager.isModelLoaded else {
             errorMessage = "FastVLM model is not loaded yet. Please wait for it to finish loading and try again."
             return
         }
-
+        
         errorMessage = nil
         Task {
             do {
@@ -743,7 +584,7 @@ struct FastVLMCameraView: View {
             }
         }
     }
-
+    
     private func reset() {
         vlmManager.cancel()
         speechService.stopListening()
@@ -762,31 +603,31 @@ struct FastVLMCameraView: View {
 struct FastVLMImagePickerView: UIViewControllerRepresentable {
     let onImageCaptured: (UIImage) -> Void
     let onCancel: () -> Void
-
+    
     func makeCoordinator() -> Coordinator {
         Coordinator(onImageCaptured: onImageCaptured, onCancel: onCancel)
     }
-
+    
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = UIImagePickerController.isSourceTypeAvailable(.camera)
-            ? .camera
-            : .photoLibrary
+        ? .camera
+        : .photoLibrary
         return picker
     }
-
+    
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-
+    
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onImageCaptured: (UIImage) -> Void
         let onCancel: () -> Void
-
+        
         init(onImageCaptured: @escaping (UIImage) -> Void, onCancel: @escaping () -> Void) {
             self.onImageCaptured = onImageCaptured
             self.onCancel = onCancel
         }
-
+        
         func imagePickerController(
             _ picker: UIImagePickerController,
             didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
@@ -796,7 +637,7 @@ struct FastVLMImagePickerView: UIViewControllerRepresentable {
                 onImageCaptured(image)
             }
         }
-
+        
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             picker.dismiss(animated: true)
             onCancel()

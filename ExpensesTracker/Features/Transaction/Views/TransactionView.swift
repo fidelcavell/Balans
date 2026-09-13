@@ -207,8 +207,6 @@ struct TransactionView: View {
                     NewTransactionView()
                 case .voiceTranscription:
                     NewTransactionView(autoVoice: true)
-                case .camera:
-                    CameraView()
                 case .cameraFastVLM:
                     FastVLMCameraView()
                 case .detailTransaction(let transaction):
